@@ -16,13 +16,13 @@ export interface DecodedToken extends TokenPayload {
 
 export const generateAccessToken = (payload: TokenPayload): string => {
   return jwt.sign(payload, config.jwt.secret, {
-    expiresIn: config.jwt.expiry,
+    expiresIn: config.jwt.expiry as string | number,
   });
 };
 
 export const generateRefreshToken = (payload: TokenPayload): string => {
   return jwt.sign(payload, config.jwt.refreshSecret, {
-    expiresIn: config.jwt.refreshExpiry,
+    expiresIn: config.jwt.refreshExpiry as string | number,
   });
 };
 

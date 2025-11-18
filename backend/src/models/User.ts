@@ -56,7 +56,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
 
   // Remove password from JSON output
   public toJSON(): object {
-    const values = { ...this.get() };
+    const values: any = { ...this.get() };
     delete values.password_hash;
     return values;
   }
