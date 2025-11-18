@@ -2,6 +2,38 @@
 
 A comprehensive, modern pharmacy management system designed for the Indian market. Supports both retail pharmacy operations and wholesale distribution with full compliance for Indian regulations (GST, Schedule H/H1/X, NDPS Act).
 
+## 🚀 Quick Deploy on Railway (Recommended for Demo)
+
+**Deploy in minutes!** Railway provides free hosting perfect for demos and testing.
+
+### One-Click Deploy
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template)
+
+### Manual Deploy
+
+1. **Fork/Clone this repo to GitHub**
+2. **Go to [Railway](https://railway.app)** and sign in with GitHub
+3. **Create New Project** → Deploy from GitHub → Select this repo
+4. **Add PostgreSQL** → Click "New" → Database → PostgreSQL
+5. **Configure Backend:**
+   - Root Directory: `backend`
+   - Add environment variables (see [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md))
+6. **Deploy Frontend:**
+   - Add new service from same repo
+   - Root Directory: `frontend`
+7. **Initialize Database:**
+   ```bash
+   railway connect postgres
+   # Paste contents of database/schema.sql
+   ```
+
+**📖 Detailed Guide:** [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md)
+
+**Your app will be live at:** `https://your-app.up.railway.app` 🎉
+
+---
+
 ## 🏥 Features
 
 ### Core Features (MVP)
@@ -34,12 +66,13 @@ A comprehensive, modern pharmacy management system designed for the Indian marke
 - **Logging**: Winston
 - **Security**: Helmet, CORS, Rate Limiting
 
-### Frontend (Upcoming)
-- **Framework**: React 18+
-- **UI Library**: Material-UI (MUI)
-- **State Management**: Context API / Redux
+### Frontend
+- **Framework**: React 18 with TypeScript
+- **UI Library**: Material-UI (MUI) v5
+- **State Management**: Zustand
 - **HTTP Client**: Axios
-- **Routing**: React Router
+- **Routing**: React Router v6
+- **Build Tool**: Vite
 
 ## 📋 Prerequisites
 
