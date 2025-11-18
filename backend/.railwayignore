@@ -1,0 +1,35 @@
+# Railway ignore file
+# Files and directories to exclude from Railway deployment
+
+# Development files
+*.md
+.git
+.gitignore
+.vscode
+.idea
+
+# Test files
+*.test.ts
+*.spec.ts
+__tests__
+
+# Logs
+logs/
+*.log
+
+# Environment
+.env.example
+
+# Temporary files
+tmp/
+temp/
+
+# Documentation
+docs/
+
+# Build artifacts (will be rebuilt)
+dist/
+
+# Database files
+*.db
+*.sqlite
