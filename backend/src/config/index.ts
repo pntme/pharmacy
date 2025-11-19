@@ -1,8 +1,39 @@
 import dotenv from 'dotenv';
 import path from 'path';
+import { randomBytes } from 'crypto';
 
 // Load environment variables
 dotenv.config({ path: path.join(__dirname, '../../.env') });
+
+// Parse Railway's DATABASE_URL if available
+function parseDatabaseUrl(url?: string) {
+  if (!url) return null;
+
+  try {
+    const parsed = new URL(url);
+    return {
+      host: parsed.hostname,
+      port: parseInt(parsed.port || '5432', 10),
+      name: parsed.pathname.slice(1), // Remove leading slash
+      user: parsed.username,
+      password: parsed.password,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// Generate a random secret for JWT (demo purposes)
+function generateSecret(): string {
+  return randomBytes(32).toString('hex');
+}
+
+const databaseFromUrl = parseDatabaseUrl(process.env.DATABASE_URL);
+
+// Warn if using default JWT secrets in production
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  console.warn('⚠️  WARNING: Using auto-generated JWT secret. Set JWT_SECRET environment variable for production!');
+}
 
 interface Config {
   env: string;
@@ -77,24 +108,27 @@ const config: Config = {
   apiVersion: process.env.API_VERSION || 'v1',
 
   database: {
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '5432', 10),
-    name: process.env.DB_NAME || 'pharmacy_db',
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || '',
+    // Use Railway's DATABASE_URL if available, otherwise use individual env vars
+    host: databaseFromUrl?.host || process.env.DB_HOST || 'localhost',
+    port: databaseFromUrl?.port || parseInt(process.env.DB_PORT || '5432', 10),
+    name: databaseFromUrl?.name || process.env.DB_NAME || 'pharmacy_db',
+    user: databaseFromUrl?.user || process.env.DB_USER || 'postgres',
+    password: databaseFromUrl?.password || process.env.DB_PASSWORD || '',
     poolMax: parseInt(process.env.DB_POOL_MAX || '20', 10),
     poolMin: parseInt(process.env.DB_POOL_MIN || '5', 10),
   },
 
   jwt: {
-    secret: process.env.JWT_SECRET || 'default-secret-change-in-production',
+    // Generate random secrets if not provided (for demo/testing)
+    secret: process.env.JWT_SECRET || generateSecret(),
     expiry: process.env.JWT_EXPIRY || '24h',
-    refreshSecret: process.env.JWT_REFRESH_SECRET || 'default-refresh-secret',
+    refreshSecret: process.env.JWT_REFRESH_SECRET || generateSecret(),
     refreshExpiry: process.env.JWT_REFRESH_EXPIRY || '7d',
   },
 
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    // Allow all origins by default in production for easier demo deployment
+    origin: process.env.CORS_ORIGIN || (process.env.NODE_ENV === 'production' ? '*' : 'http://localhost:3000'),
   },
 
   rateLimit: {

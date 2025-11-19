@@ -736,11 +736,7 @@ CREATE TABLE audit_logs (
     user_id INTEGER REFERENCES users(user_id),
     ip_address VARCHAR(50),
     user_agent TEXT,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    INDEX idx_audit_table (table_name),
-    INDEX idx_audit_user (user_id),
-    INDEX idx_audit_timestamp (timestamp)
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Stock Adjustments Table
@@ -830,6 +826,11 @@ CREATE INDEX idx_sales_orders_status ON sales_orders(status);
 CREATE INDEX idx_po_number ON purchase_orders(po_number);
 CREATE INDEX idx_po_supplier ON purchase_orders(supplier_id);
 CREATE INDEX idx_po_date ON purchase_orders(order_date);
+
+-- Audit logs indexes
+CREATE INDEX idx_audit_table ON audit_logs(table_name);
+CREATE INDEX idx_audit_user ON audit_logs(user_id);
+CREATE INDEX idx_audit_timestamp ON audit_logs(timestamp);
 
 -- ============================================================================
 -- INITIAL DATA
