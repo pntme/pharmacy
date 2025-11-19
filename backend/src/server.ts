@@ -92,8 +92,23 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 // Start server
 const startServer = async (): Promise<void> => {
   try {
+    // Debug: Log environment and database config
+    console.log('=== Starting Pharmacy Management System ===');
+    console.log('Environment:', config.env);
+    console.log('Port:', config.port);
+    console.log('DATABASE_URL set:', !!process.env.DATABASE_URL);
+    console.log('Database config:', {
+      host: config.database.host,
+      port: config.database.port,
+      name: config.database.name,
+      user: config.database.user,
+      hasPassword: !!config.database.password,
+    });
+
     // Connect to database
+    console.log('Attempting to connect to database...');
     await connectDatabase();
+    console.log('✅ Database connected successfully!');
 
     // Start listening
     app.listen(config.port, () => {
@@ -117,6 +132,12 @@ const startServer = async (): Promise<void> => {
       `);
     });
   } catch (error) {
+    console.error('❌ Failed to start server!');
+    console.error('Error details:', error);
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
     logger.error('Failed to start server:', error);
     process.exit(1);
   }

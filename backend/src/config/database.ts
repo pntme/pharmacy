@@ -27,7 +27,9 @@ const sequelize = new Sequelize({
 
 export const connectDatabase = async (): Promise<void> => {
   try {
+    console.log('Testing database authentication...');
     await sequelize.authenticate();
+    console.log('✅ Database authentication successful');
     logger.info('✅ Database connection established successfully');
 
     if (config.env === 'development') {
@@ -36,8 +38,19 @@ export const connectDatabase = async (): Promise<void> => {
       // logger.info('✅ Database models synchronized');
     }
   } catch (error) {
+    console.error('❌ Database connection failed!');
+    console.error('Connection details:', {
+      host: config.database.host,
+      port: config.database.port,
+      database: config.database.name,
+      user: config.database.user,
+    });
+    console.error('Error:', error);
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+    }
     logger.error('❌ Unable to connect to the database:', error);
-    process.exit(1);
+    throw error; // Re-throw instead of process.exit to let server.ts handle it
   }
 };
 
