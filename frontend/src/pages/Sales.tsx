@@ -64,7 +64,7 @@ export default function Sales() {
     setLoading(true);
     try {
       const response = await salesAPI.getAll() as any;
-      setSales(response.data || []);
+      setSales(response.data?.orders || []);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to fetch sales');
     } finally {
@@ -75,7 +75,7 @@ export default function Sales() {
   const handleViewOrder = async (order: SalesOrder) => {
     try {
       const response = await salesAPI.getById(order.order_id) as any;
-      setSelectedOrder(response.data);
+      setSelectedOrder(response.data?.order || response.data);
       setViewDialog(true);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to fetch order details');
