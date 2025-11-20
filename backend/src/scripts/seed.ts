@@ -1,5 +1,5 @@
-import { sequelize } from '../config/database';
-import { Product, Inventory, Patient, SalesOrder, SalesOrderItem, User } from '../models';
+import sequelize from '../config/database';
+import { Product, Inventory, Patient, SalesOrder, SalesOrderItem, User, Role } from '../models';
 import bcrypt from 'bcryptjs';
 
 const sampleProducts = [
@@ -26,11 +26,11 @@ const sampleProducts = [
 ];
 
 const samplePatients = [
-  { first_name: 'Rajesh', last_name: 'Kumar', date_of_birth: new Date('1985-03-15'), gender: 'Male', phone_number: '9876543210', email: 'rajesh.k@example.com', address: '123 MG Road, Bangalore', blood_group: 'O+', allergies: 'Penicillin', medical_history: 'Diabetes Type 2' },
-  { first_name: 'Priya', last_name: 'Sharma', date_of_birth: new Date('1990-07-22'), gender: 'Female', phone_number: '9876543211', email: 'priya.s@example.com', address: '456 Park Street, Mumbai', blood_group: 'A+', allergies: null, medical_history: 'Hypertension' },
-  { first_name: 'Amit', last_name: 'Patel', date_of_birth: new Date('1978-11-30'), gender: 'Male', phone_number: '9876543212', email: 'amit.p@example.com', address: '789 Ring Road, Delhi', blood_group: 'B+', allergies: 'Sulfa drugs', medical_history: null },
-  { first_name: 'Sneha', last_name: 'Reddy', date_of_birth: new Date('1995-05-18'), gender: 'Female', phone_number: '9876543213', email: 'sneha.r@example.com', address: '321 Anna Salai, Chennai', blood_group: 'AB+', allergies: null, medical_history: 'Asthma' },
-  { first_name: 'Vikram', last_name: 'Singh', date_of_birth: new Date('1982-09-10'), gender: 'Male', phone_number: '9876543214', email: 'vikram.s@example.com', address: '654 Mall Road, Pune', blood_group: 'O-', allergies: 'Aspirin', medical_history: 'Cholesterol' },
+  { patient_code: 'PAT001', first_name: 'Rajesh', last_name: 'Kumar', date_of_birth: new Date('1985-03-15'), gender: 'Male', phone_number: '9876543210', email: 'rajesh.k@example.com', blood_group: 'O+' },
+  { patient_code: 'PAT002', first_name: 'Priya', last_name: 'Sharma', date_of_birth: new Date('1990-07-22'), gender: 'Female', phone_number: '9876543211', email: 'priya.s@example.com', blood_group: 'A+' },
+  { patient_code: 'PAT003', first_name: 'Amit', last_name: 'Patel', date_of_birth: new Date('1978-11-30'), gender: 'Male', phone_number: '9876543212', email: 'amit.p@example.com', blood_group: 'B+' },
+  { patient_code: 'PAT004', first_name: 'Sneha', last_name: 'Reddy', date_of_birth: new Date('1995-05-18'), gender: 'Female', phone_number: '9876543213', email: 'sneha.r@example.com', blood_group: 'AB+' },
+  { patient_code: 'PAT005', first_name: 'Vikram', last_name: 'Singh', date_of_birth: new Date('1982-09-10'), gender: 'Male', phone_number: '9876543214', email: 'vikram.s@example.com', blood_group: 'O-' },
 ];
 
 async function seedDatabase() {
@@ -49,16 +49,28 @@ async function seedDatabase() {
     await Patient.destroy({ where: {}, truncate: true, cascade: true });
     console.log('✅ Cleared existing data');
 
+    // Ensure admin role exists
+    let adminRole = await Role.findOne({ where: { role_name: 'admin' } });
+    if (!adminRole) {
+      adminRole = await Role.create({
+        role_name: 'admin',
+        role_description: 'Administrator with full access',
+        permissions: {},
+      });
+      console.log('✅ Created admin role');
+    }
+
     // Ensure admin user exists
     const adminExists = await User.findOne({ where: { username: 'admin' } });
     if (!adminExists) {
       const hashedPassword = await bcrypt.hash('admin123', 10);
       await User.create({
         username: 'admin',
-        password: hashedPassword,
-        full_name: 'Admin User',
+        password_hash: hashedPassword,
+        first_name: 'Admin',
+        last_name: 'User',
         email: 'admin@devsystems.com',
-        role: 'admin',
+        role_id: adminRole.role_id,
         is_active: true,
       });
       console.log('✅ Created admin user');
@@ -83,17 +95,20 @@ async function seedDatabase() {
         const expiryDate = new Date(today);
         expiryDate.setMonth(expiryDate.getMonth() + monthsToAdd);
 
+        const quantityOnHand = Math.floor(Math.random() * 500) + 50; // 50-550 units
         inventoryData.push({
           product_id: product.product_id,
           batch_number: `BATCH-${product.item_code}-${String(i + 1).padStart(3, '0')}`,
-          quantity_in_stock: Math.floor(Math.random() * 500) + 50, // 50-550 units
+          quantity_on_hand: quantityOnHand,
+          quantity_allocated: 0,
           expiry_date: expiryDate,
-          cost_per_unit: product.selling_price * 0.7, // Cost is 70% of selling price
+          received_date: new Date(),
+          cost_per_unit: (product.selling_price || 0) * 0.7, // Cost is 70% of selling price
           mrp: product.mrp,
-          location_bin: `A${Math.floor(Math.random() * 10) + 1}`,
-          location_rack: `R${Math.floor(Math.random() * 20) + 1}`,
-          location_shelf: `S${Math.floor(Math.random() * 5) + 1}`,
-          status: 'active',
+          bin_location: `A${Math.floor(Math.random() * 10) + 1}`,
+          rack_number: `R${Math.floor(Math.random() * 20) + 1}`,
+          shelf_number: `S${Math.floor(Math.random() * 5) + 1}`,
+          status: 'available',
         });
       }
     }
@@ -108,8 +123,8 @@ async function seedDatabase() {
 
     // Seed Sales Orders (last 30 days)
     console.log('💰 Seeding sales orders...');
-    const salesOrders = [];
-    const salesOrderItems = [];
+    const salesOrders: any[] = [];
+    const salesOrderItems: any[] = [];
 
     // Create sales for last 30 days
     for (let dayOffset = 30; dayOffset >= 0; dayOffset--) {
@@ -123,11 +138,11 @@ async function seedDatabase() {
       for (let i = 0; i < ordersPerDay; i++) {
         const orderNumber = `ORD-${orderDate.getFullYear()}${String(orderDate.getMonth() + 1).padStart(2, '0')}${String(orderDate.getDate()).padStart(2, '0')}-${String(salesOrders.length + 1).padStart(4, '0')}`;
         const hasPatient = Math.random() > 0.3; // 70% have patient
-        const patient_id = hasPatient ? patients[Math.floor(Math.random() * patients.length)].patient_id : null;
+        const patient_id = hasPatient ? patients[Math.floor(Math.random() * patients.length)].patient_id : undefined;
 
         // Select 1-5 random products for this order
         const itemCount = Math.floor(Math.random() * 5) + 1;
-        const selectedProducts = [];
+        const selectedProducts: typeof products = [];
         for (let j = 0; j < itemCount; j++) {
           const product = products[Math.floor(Math.random() * products.length)];
           if (!selectedProducts.find(p => p.product_id === product.product_id)) {
@@ -137,15 +152,18 @@ async function seedDatabase() {
 
         // Calculate order totals
         let subtotal = 0;
-        const orderItems = [];
+        let total_gst = 0;
+        const orderItems: any[] = [];
 
         for (const product of selectedProducts) {
           const quantity = Math.floor(Math.random() * 5) + 1; // 1-5 units
-          const unit_price = product.selling_price;
+          const unit_price = product.selling_price || 0;
           const total_price = quantity * unit_price;
-          const gst_amount = (total_price * product.gst_rate) / (100 + product.gst_rate);
+          const gst_rate = product.gst_rate || 0;
+          const gst_amount = (total_price * gst_rate) / (100 + gst_rate);
 
           subtotal += total_price;
+          total_gst += gst_amount;
 
           orderItems.push({
             order_number: orderNumber,
@@ -154,27 +172,25 @@ async function seedDatabase() {
             unit_price: unit_price,
             discount_percent: 0,
             discount_amount: 0,
-            gst_rate: product.gst_rate,
+            gst_rate: gst_rate,
             gst_amount: gst_amount,
             total_price: total_price,
           });
         }
 
-        // Calculate GST breakdown
-        const cgst_amount = subtotal * 0.06; // Assuming 12% GST split as 6% CGST + 6% SGST
-        const sgst_amount = subtotal * 0.06;
+        // Calculate GST breakdown (split into CGST and SGST for intra-state)
+        const cgst_amount = total_gst / 2;
+        const sgst_amount = total_gst / 2;
         const igst_amount = 0;
         const total_amount = subtotal;
 
-        const payment_methods = ['cash', 'card', 'upi', 'insurance'];
-        const payment_method = payment_methods[Math.floor(Math.random() * payment_methods.length)];
-        const payment_statuses = ['paid', 'paid', 'paid', 'partial']; // 75% fully paid
+        const payment_statuses = ['paid', 'paid', 'paid', 'partial'] as const; // 75% fully paid
         const payment_status = payment_statuses[Math.floor(Math.random() * payment_statuses.length)];
         const amount_paid = payment_status === 'paid' ? total_amount : total_amount * 0.5;
 
         salesOrders.push({
           order_number: orderNumber,
-          order_type: 'pos',
+          order_type: 'retail',
           order_date: orderDate,
           patient_id: patient_id,
           location_id: 1,
@@ -184,7 +200,6 @@ async function seedDatabase() {
           sgst_amount: sgst_amount,
           igst_amount: igst_amount,
           total_amount: total_amount,
-          payment_method: payment_method,
           payment_status: payment_status,
           amount_paid: amount_paid,
           balance_due: total_amount - amount_paid,

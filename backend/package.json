@@ -7,7 +7,6 @@
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
-    "seed": "echo 'Seeding happens automatically on server start'",
     "test": "jest",
     "lint": "eslint . --ext .ts",
     "migrate": "node dist/utils/migrate.js",
