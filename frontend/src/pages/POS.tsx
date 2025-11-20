@@ -27,7 +27,7 @@ export default function POS() {
 
     try {
       const response: any = await productsAPI.search(search);
-      setSearchResults(response.data || []);
+      setSearchResults(response.data?.products || []);
     } catch (error) {
       toast.error('Failed to search products');
     }

@@ -74,7 +74,7 @@ export default function Patients() {
     setLoading(true);
     try {
       const response = await patientsAPI.getAll() as any;
-      setPatients(response.data || []);
+      setPatients(response.data?.patients || []);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to fetch patients');
     } finally {
@@ -91,7 +91,7 @@ export default function Patients() {
     setLoading(true);
     try {
       const response = await patientsAPI.search(searchQuery) as any;
-      setPatients(response.data || []);
+      setPatients(response.data?.patients || []);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Search failed');
     } finally {

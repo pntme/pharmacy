@@ -67,7 +67,7 @@ export default function Products() {
     setLoading(true);
     try {
       const response = await productsAPI.getAll() as any;
-      setProducts(response.data || []);
+      setProducts(response.data?.products || []);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to fetch products');
     } finally {
@@ -84,7 +84,7 @@ export default function Products() {
     setLoading(true);
     try {
       const response = await productsAPI.search(searchQuery) as any;
-      setProducts(response.data || []);
+      setProducts(response.data?.products || []);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Search failed');
     } finally {

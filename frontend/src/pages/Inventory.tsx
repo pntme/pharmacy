@@ -84,7 +84,7 @@ export default function Inventory() {
     setLoading(true);
     try {
       const response = await inventoryAPI.getAll() as any;
-      setInventory(response.data || []);
+      setInventory(response.data?.inventory || []);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to fetch inventory');
     } finally {
@@ -95,7 +95,7 @@ export default function Inventory() {
   const fetchExpiringItems = async () => {
     try {
       const response = await inventoryAPI.getExpiring() as any;
-      setExpiringItems(response.data || []);
+      setExpiringItems(response.data?.inventory || []);
     } catch (error: any) {
       console.error('Failed to fetch expiring items:', error);
     }
@@ -104,7 +104,7 @@ export default function Inventory() {
   const fetchProducts = async () => {
     try {
       const response = await productsAPI.getAll() as any;
-      setProducts(response.data || []);
+      setProducts(response.data?.products || []);
     } catch (error: any) {
       console.error('Failed to fetch products:', error);
     }
