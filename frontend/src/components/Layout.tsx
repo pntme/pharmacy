@@ -17,6 +17,10 @@ import {
   styled,
   CSSObject,
   Theme,
+  Menu,
+  MenuItem,
+  Avatar,
+  Chip,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -29,6 +33,8 @@ import {
   Assessment,
   Logout,
   LocalPharmacy,
+  AccountCircle,
+  Person,
 } from '@mui/icons-material';
 import { useAuthStore } from '../stores/authStore';
 
@@ -91,6 +97,7 @@ const StyledDrawer = styled(Drawer, {
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const location = useLocation();
   const { user, logout } = useAuthStore();
 
@@ -100,6 +107,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const handleMobileDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
+  };
+
+  const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleUserMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    handleUserMenuClose();
+    logout();
   };
 
   const drawer = (isCollapsed: boolean) => (
@@ -313,14 +333,75 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
-            Dev Systems - Pharmacy Management
-          </Typography>
-          <Typography variant="body2">
-            Welcome, {user?.full_name || user?.username}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+                Dev Systems
+              </Typography>
+              <Typography variant="caption" sx={{ fontSize: '0.75rem', opacity: 0.9 }}>
+                Pharmacy Management
+              </Typography>
+            </Box>
+          </Box>
+          <Tooltip title="User Profile">
+            <IconButton
+              onClick={handleUserMenuOpen}
+              sx={{
+                color: 'white',
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                },
+              }}
+            >
+              <Avatar
+                sx={{
+                  width: 36,
+                  height: 36,
+                  bgcolor: 'rgba(255, 255, 255, 0.2)',
+                  color: 'white',
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                }}
+              >
+                {user?.full_name ? user.full_name.charAt(0).toUpperCase() : user?.username?.charAt(0).toUpperCase()}
+              </Avatar>
+            </IconButton>
+          </Tooltip>
         </Toolbar>
       </AppBar>
+
+      {/* User Menu */}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleUserMenuClose}
+        PaperProps={{
+          sx: {
+            mt: 1.5,
+            minWidth: 200,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+            borderRadius: 2,
+          },
+        }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+      >
+        <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid #f0f0f0' }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+            {user?.full_name || user?.username}
+          </Typography>
+          <Chip
+            label={user?.role || 'User'}
+            size="small"
+            color="primary"
+            sx={{ mt: 0.5, fontSize: '0.7rem', height: 20 }}
+          />
+        </Box>
+        <MenuItem onClick={handleLogout} sx={{ py: 1.5, gap: 1.5 }}>
+          <Logout fontSize="small" color="error" />
+          <Typography variant="body2">Logout</Typography>
+        </MenuItem>
+      </Menu>
 
       {/* Mobile Drawer */}
       <Box
