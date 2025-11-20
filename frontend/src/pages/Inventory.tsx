@@ -284,14 +284,14 @@ export default function Inventory() {
       label: 'Cost (₹)',
       minWidth: 100,
       align: 'right',
-      format: (value) => `₹${value.toFixed(2)}`,
+      format: (value) => `₹${(value || 0).toFixed(2)}`,
     },
     {
       id: 'mrp',
       label: 'MRP (₹)',
       minWidth: 100,
       align: 'right',
-      format: (value) => value ? `₹${value.toFixed(2)}` : '-',
+      format: (value) => (value && typeof value === 'number') ? `₹${value.toFixed(2)}` : '-',
     },
     {
       id: 'status',

@@ -69,7 +69,7 @@ export default function POS() {
   };
 
   const handleCheckout = async () => {
-    if (cart.length === 0) {
+    if (!Array.isArray(cart) || cart.length === 0) {
       toast.error('Cart is empty');
       return;
     }
@@ -192,7 +192,7 @@ export default function POS() {
                 size="large"
                 sx={{ mt: 2 }}
                 onClick={handleCheckout}
-                disabled={cart.length === 0}
+                disabled={!Array.isArray(cart) || cart.length === 0}
               >
                 Complete Sale
               </Button>
