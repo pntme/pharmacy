@@ -109,10 +109,7 @@ User.init(
     location_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
-      references: {
-        model: 'locations',
-        key: 'location_id',
-      },
+      // Foreign key to locations table - will be added when Location model is implemented
     },
     pharmacist_registration_number: {
       type: DataTypes.STRING(100),

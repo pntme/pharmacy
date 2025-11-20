@@ -32,11 +32,16 @@ export const connectDatabase = async (): Promise<void> => {
     console.log('✅ Database authentication successful');
     logger.info('✅ Database connection established successfully');
 
-    if (config.env === 'development') {
-      // Sync models in development (be careful in production!)
-      // await sequelize.sync({ alter: true });
-      // logger.info('✅ Database models synchronized');
-    }
+    // Auto-create tables from Sequelize models
+    // This will create tables if they don't exist, but won't drop existing data
+    await sequelize.sync({ alter: false });
+    logger.info('✅ Database tables synchronized');
+    console.log('✅ Database tables created/verified');
+
+    // Seed default roles
+    // Dynamic import to avoid circular dependencies
+    const { seedDefaultRoles } = await import('../utils/seed');
+    await seedDefaultRoles();
   } catch (error) {
     console.error('❌ Database connection failed!');
     console.error('Connection details:', {

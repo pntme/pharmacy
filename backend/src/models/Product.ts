@@ -104,10 +104,7 @@ Product.init(
     manufacturer_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
-      references: {
-        model: 'manufacturers',
-        key: 'manufacturer_id',
-      },
+      // Foreign key to manufacturers table - will be added when Manufacturer model is implemented
     },
     strength: {
       type: DataTypes.STRING(100),

@@ -59,10 +59,10 @@ export default function Dashboard() {
       ]);
 
       setStats({
-        todaySales: dashboardStats?.data?.todaySales || 0,
-        totalOrders: dashboardStats?.data?.totalOrders || 0,
-        lowStock: inventorySummary?.data?.low_stock_count || 0,
-        patients: dashboardStats?.data?.patients || 0,
+        todaySales: (salesReport as any)?.summary?.total_sales || 0,
+        totalOrders: (salesReport as any)?.summary?.total_orders || 0,
+        lowStock: (inventorySummary as any)?.low_stock_count || 0,
+        patients: 0,
       });
 
       setSalesTrendData(weeklySales?.data || []);

@@ -8,6 +8,8 @@ import { connectDatabase } from './config/database';
 import routes from './routes';
 import logger from './utils/logger';
 import path from 'path';
+// Import models to register associations before database sync
+import './models';
 
 // Initialize express app
 const app: Application = express();
