@@ -284,14 +284,14 @@ export default function Inventory() {
       label: 'Cost (₹)',
       minWidth: 100,
       align: 'right',
-      format: (value) => `₹${value.toFixed(2)}`,
+      format: (value) => `₹${(value || 0).toFixed(2)}`,
     },
     {
       id: 'mrp',
       label: 'MRP (₹)',
       minWidth: 100,
       align: 'right',
-      format: (value) => value ? `₹${value.toFixed(2)}` : '-',
+      format: (value) => (value && typeof value === 'number') ? `₹${value.toFixed(2)}` : '-',
     },
     {
       id: 'status',
@@ -382,7 +382,7 @@ export default function Inventory() {
                 disabled={!!selectedItem}
               >
                 <MenuItem value="">Select Product</MenuItem>
-                {products.map((product) => (
+                {Array.isArray(products) && products.map((product) => (
                   <MenuItem key={product.product_id} value={product.product_id.toString()}>
                     {product.product_name} ({product.item_code})
                   </MenuItem>

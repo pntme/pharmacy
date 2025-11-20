@@ -105,49 +105,134 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const drawer = (isCollapsed: boolean) => (
     <div>
       <DrawerHeader>
-        {!isCollapsed && (
-          <Typography variant="h6" noWrap component="div" sx={{ ml: 1 }}>
-            Pharmacy MS
-          </Typography>
-        )}
-        {!isCollapsed && (
-          <IconButton onClick={handleDrawerToggle}>
-            <ChevronLeftIcon />
-          </IconButton>
+        {isCollapsed ? (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Box
+              sx={{
+                background: 'linear-gradient(135deg, #953553 0%, #7a2a43 100%)',
+                borderRadius: '50%',
+                width: 40,
+                height: 40,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(149, 53, 83, 0.3)',
+              }}
+            >
+              <LocalPharmacy sx={{ fontSize: 24, color: 'white' }} />
+            </Box>
+          </Box>
+        ) : (
+          <>
+            <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}>
+              <Box
+                sx={{
+                  background: 'linear-gradient(135deg, #953553 0%, #7a2a43 100%)',
+                  borderRadius: '50%',
+                  width: 40,
+                  height: 40,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  mr: 1.5,
+                  boxShadow: '0 2px 8px rgba(149, 53, 83, 0.3)',
+                }}
+              >
+                <LocalPharmacy sx={{ fontSize: 24, color: 'white' }} />
+              </Box>
+              <Box>
+                <Typography
+                  variant="subtitle1"
+                  sx={{
+                    fontWeight: 700,
+                    color: 'primary.main',
+                    lineHeight: 1.2,
+                  }}
+                >
+                  Dev Systems
+                </Typography>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: 'text.secondary',
+                    fontSize: '0.7rem',
+                  }}
+                >
+                  Pharmacy Management
+                </Typography>
+              </Box>
+            </Box>
+            <IconButton onClick={handleDrawerToggle}>
+              <ChevronLeftIcon />
+            </IconButton>
+          </>
         )}
       </DrawerHeader>
       <Divider />
       <List>
-        {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding sx={{ display: 'block' }}>
-            <Tooltip title={isCollapsed ? item.text : ''} placement="right" arrow>
-              <ListItemButton
-                component={Link}
-                to={item.path}
-                selected={location.pathname === item.path}
-                sx={{
-                  minHeight: 48,
-                  justifyContent: isCollapsed ? 'center' : 'initial',
-                  px: 2.5,
-                }}
-              >
-                <ListItemIcon
+        {menuItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <ListItem key={item.text} disablePadding sx={{ display: 'block' }}>
+              <Tooltip title={isCollapsed ? item.text : ''} placement="right" arrow>
+                <ListItemButton
+                  component={Link}
+                  to={item.path}
+                  selected={isActive}
                   sx={{
-                    minWidth: 0,
-                    mr: isCollapsed ? 'auto' : 3,
-                    justifyContent: 'center',
+                    minHeight: 48,
+                    justifyContent: isCollapsed ? 'center' : 'initial',
+                    px: 2.5,
+                    borderRadius: isCollapsed ? 0 : '0 24px 24px 0',
+                    mx: isCollapsed ? 0 : 1,
+                    my: 0.5,
+                    transition: 'all 0.2s ease-in-out',
+                    '&.Mui-selected': {
+                      backgroundColor: 'rgba(149, 53, 83, 0.08)',
+                      borderLeft: isCollapsed ? '3px solid #953553' : 'none',
+                      '&:hover': {
+                        backgroundColor: 'rgba(149, 53, 83, 0.12)',
+                      },
+                    },
+                    '&:hover': {
+                      backgroundColor: 'rgba(149, 53, 83, 0.04)',
+                      transform: isCollapsed ? 'none' : 'translateX(4px)',
+                    },
                   }}
                 >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.text}
-                  sx={{ opacity: isCollapsed ? 0 : 1 }}
-                />
-              </ListItemButton>
-            </Tooltip>
-          </ListItem>
-        ))}
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: isCollapsed ? 'auto' : 3,
+                      justifyContent: 'center',
+                      color: isActive ? 'primary.main' : 'text.secondary',
+                      transition: 'color 0.2s ease-in-out',
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.text}
+                    sx={{
+                      opacity: isCollapsed ? 0 : 1,
+                      '& .MuiTypography-root': {
+                        fontWeight: isActive ? 600 : 500,
+                        color: isActive ? 'primary.main' : 'text.primary',
+                      },
+                    }}
+                  />
+                </ListItemButton>
+              </Tooltip>
+            </ListItem>
+          );
+        })}
       </List>
       <Divider />
       <List>
@@ -159,6 +244,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 minHeight: 48,
                 justifyContent: isCollapsed ? 'center' : 'initial',
                 px: 2.5,
+                borderRadius: isCollapsed ? 0 : '0 24px 24px 0',
+                mx: isCollapsed ? 0 : 1,
+                my: 0.5,
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  backgroundColor: 'rgba(220, 0, 78, 0.08)',
+                  transform: isCollapsed ? 'none' : 'translateX(4px)',
+                },
               }}
             >
               <ListItemIcon
@@ -166,11 +259,20 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   minWidth: 0,
                   mr: isCollapsed ? 'auto' : 3,
                   justifyContent: 'center',
+                  color: 'error.main',
                 }}
               >
                 <Logout />
               </ListItemIcon>
-              <ListItemText primary="Logout" sx={{ opacity: isCollapsed ? 0 : 1 }} />
+              <ListItemText
+                primary="Logout"
+                sx={{
+                  opacity: isCollapsed ? 0 : 1,
+                  '& .MuiTypography-root': {
+                    fontWeight: 500,
+                  },
+                }}
+              />
             </ListItemButton>
           </Tooltip>
         </ListItem>
@@ -211,8 +313,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            Pharmacy Management System
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
+            Dev Systems - Pharmacy Management
           </Typography>
           <Typography variant="body2">
             Welcome, {user?.full_name || user?.username}

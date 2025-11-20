@@ -65,11 +65,11 @@ export default function POS() {
   };
 
   const calculateTotal = () => {
-    return cart.reduce((sum, item) => sum + item.unit_price * item.quantity, 0);
+    return Array.isArray(cart) ? cart.reduce((sum, item) => sum + item.unit_price * item.quantity, 0) : 0;
   };
 
   const handleCheckout = async () => {
-    if (cart.length === 0) {
+    if (!Array.isArray(cart) || cart.length === 0) {
       toast.error('Cart is empty');
       return;
     }
@@ -108,7 +108,7 @@ export default function POS() {
               placeholder="Search by product name, generic name, or item code..."
             />
             <Box sx={{ mt: 2, maxHeight: 400, overflow: 'auto' }}>
-              {searchResults.map((product) => (
+              {Array.isArray(searchResults) && searchResults.map((product) => (
                 <Paper
                   key={product.product_id}
                   sx={{ p: 2, mb: 1, cursor: 'pointer' }}
@@ -151,7 +151,7 @@ export default function POS() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {cart.map((item) => (
+                {Array.isArray(cart) && cart.map((item) => (
                   <TableRow key={item.product_id}>
                     <TableCell>{item.product_name}</TableCell>
                     <TableCell align="center">
@@ -192,7 +192,7 @@ export default function POS() {
                 size="large"
                 sx={{ mt: 2 }}
                 onClick={handleCheckout}
-                disabled={cart.length === 0}
+                disabled={!Array.isArray(cart) || cart.length === 0}
               >
                 Complete Sale
               </Button>

@@ -220,7 +220,7 @@ export default function Products() {
       label: 'MRP (₹)',
       minWidth: 100,
       align: 'right',
-      format: (value) => `₹${value.toFixed(2)}`,
+      format: (value) => `₹${(value || 0).toFixed(2)}`,
     },
     {
       id: 'gst_rate',

@@ -151,7 +151,7 @@ export default function Sales() {
       label: 'Subtotal',
       minWidth: 100,
       align: 'right',
-      format: (value) => `₹${value.toFixed(2)}`,
+      format: (value) => `₹${(value || 0).toFixed(2)}`,
     },
     {
       id: 'total_amount',
@@ -160,7 +160,7 @@ export default function Sales() {
       align: 'right',
       format: (value) => (
         <Typography variant="body2" fontWeight="bold">
-          ₹{value.toFixed(2)}
+          ₹{(value || 0).toFixed(2)}
         </Typography>
       ),
     },
@@ -314,7 +314,7 @@ export default function Sales() {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {selectedOrder.items.map((item: any, index: number) => (
+                        {Array.isArray(selectedOrder.items) && selectedOrder.items.map((item: any, index: number) => (
                           <TableRow key={index}>
                             <TableCell>{item.product_name || 'Product'}</TableCell>
                             <TableCell align="center">{item.quantity}</TableCell>
@@ -337,7 +337,7 @@ export default function Sales() {
                       <Box sx={{ mt: 2 }}>
                         <Box display="flex" justifyContent="space-between" mb={1}>
                           <Typography variant="body2">Subtotal</Typography>
-                          <Typography variant="body2">₹{selectedOrder.subtotal.toFixed(2)}</Typography>
+                          <Typography variant="body2">₹{(selectedOrder.subtotal || 0).toFixed(2)}</Typography>
                         </Box>
                         {selectedOrder.discount_amount && selectedOrder.discount_amount > 0 && (
                           <Box display="flex" justifyContent="space-between" mb={1}>
@@ -345,33 +345,33 @@ export default function Sales() {
                               Discount
                             </Typography>
                             <Typography variant="body2" color="error">
-                              -₹{selectedOrder.discount_amount.toFixed(2)}
+                              -₹{(selectedOrder.discount_amount || 0).toFixed(2)}
                             </Typography>
                           </Box>
                         )}
                         {selectedOrder.cgst_amount && selectedOrder.cgst_amount > 0 && (
                           <Box display="flex" justifyContent="space-between" mb={1}>
                             <Typography variant="body2">CGST</Typography>
-                            <Typography variant="body2">₹{selectedOrder.cgst_amount.toFixed(2)}</Typography>
+                            <Typography variant="body2">₹{(selectedOrder.cgst_amount || 0).toFixed(2)}</Typography>
                           </Box>
                         )}
                         {selectedOrder.sgst_amount && selectedOrder.sgst_amount > 0 && (
                           <Box display="flex" justifyContent="space-between" mb={1}>
                             <Typography variant="body2">SGST</Typography>
-                            <Typography variant="body2">₹{selectedOrder.sgst_amount.toFixed(2)}</Typography>
+                            <Typography variant="body2">₹{(selectedOrder.sgst_amount || 0).toFixed(2)}</Typography>
                           </Box>
                         )}
                         {selectedOrder.igst_amount && selectedOrder.igst_amount > 0 && (
                           <Box display="flex" justifyContent="space-between" mb={1}>
                             <Typography variant="body2">IGST</Typography>
-                            <Typography variant="body2">₹{selectedOrder.igst_amount.toFixed(2)}</Typography>
+                            <Typography variant="body2">₹{(selectedOrder.igst_amount || 0).toFixed(2)}</Typography>
                           </Box>
                         )}
                         <Divider sx={{ my: 1 }} />
                         <Box display="flex" justifyContent="space-between" mb={2}>
                           <Typography variant="h6">Total Amount</Typography>
                           <Typography variant="h6" color="primary">
-                            ₹{selectedOrder.total_amount.toFixed(2)}
+                            ₹{(selectedOrder.total_amount || 0).toFixed(2)}
                           </Typography>
                         </Box>
                         <Box display="flex" justifyContent="space-between" mb={1}>

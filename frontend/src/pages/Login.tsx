@@ -49,11 +49,53 @@ export default function Login() {
             flexDirection: 'column',
             alignItems: 'center',
             width: '100%',
+            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
           }}
         >
-          <LocalPharmacy sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
-          <Typography component="h1" variant="h5">
-            Pharmacy Management System
+          <Box
+            sx={{
+              background: 'linear-gradient(135deg, #953553 0%, #7a2a43 100%)',
+              borderRadius: '50%',
+              width: 80,
+              height: 80,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mb: 2,
+              boxShadow: '0 4px 20px rgba(149, 53, 83, 0.3)',
+              animation: 'pulse 2s ease-in-out infinite',
+              '@keyframes pulse': {
+                '0%, 100%': {
+                  boxShadow: '0 4px 20px rgba(149, 53, 83, 0.3)',
+                },
+                '50%': {
+                  boxShadow: '0 4px 30px rgba(149, 53, 83, 0.5)',
+                },
+              },
+            }}
+          >
+            <LocalPharmacy sx={{ fontSize: 48, color: 'white' }} />
+          </Box>
+          <Typography
+            component="h1"
+            variant="h4"
+            sx={{
+              fontWeight: 700,
+              color: 'primary.main',
+              mb: 0.5,
+            }}
+          >
+            Dev Systems
+          </Typography>
+          <Typography
+            variant="h6"
+            color="text.secondary"
+            sx={{
+              fontWeight: 500,
+              mb: 1,
+            }}
+          >
+            Pharmacy Management
           </Typography>
           <Typography variant="body2" color="text.secondary" gutterBottom>
             Sign in to continue
