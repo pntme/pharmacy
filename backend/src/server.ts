@@ -110,8 +110,10 @@ const startServer = async (): Promise<void> => {
     await connectDatabase();
     console.log('✅ Database connected successfully!');
 
-    // Start listening
-    app.listen(config.port, () => {
+    // Start listening on all network interfaces (required for Railway)
+    const HOST = '0.0.0.0';
+    app.listen(config.port, HOST, () => {
+      console.log(`✅ Server is now listening on ${HOST}:${config.port}`);
       logger.info(`
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │

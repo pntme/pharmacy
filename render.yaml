@@ -1,0 +1,27 @@
+databases:
+  - name: pharmacy-db
+    databaseName: pharmacy_db
+    user: pharmacy_user
+    plan: free
+
+services:
+  - type: web
+    name: pharmacy-backend
+    runtime: node
+    plan: free
+    buildCommand: cd backend && npm install && npm run build
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pharmacy-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+    healthCheckPath: /api/v1/health
