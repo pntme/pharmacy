@@ -33,8 +33,6 @@ import {
   Assessment,
   Logout,
   LocalPharmacy,
-  AccountCircle,
-  Person,
 } from '@mui/icons-material';
 import { useAuthStore } from '../stores/authStore';
 
