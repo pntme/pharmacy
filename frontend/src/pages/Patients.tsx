@@ -253,7 +253,7 @@ export default function Patients() {
       label: 'Total Purchases',
       minWidth: 140,
       align: 'right',
-      format: (value) => `₹${(value || 0).toFixed(2)}`,
+      format: (value) => `₹${Number(value || 0).toFixed(2)}`,
     },
     {
       id: 'is_active',

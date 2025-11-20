@@ -28,10 +28,10 @@ import { salesAPI, inventoryAPI } from '../services/api';
 interface DailyReport {
   total_sales: number;
   total_orders: number;
-  total_cgst: number;
-  total_sgst: number;
-  total_igst: number;
-  avg_order_value: number;
+  total_gst: number;
+  total_discount: number;
+  cash_sales: number;
+  delivery_sales: number;
 }
 
 interface InventorySummary {
@@ -57,7 +57,7 @@ export default function Reports() {
         inventoryAPI.getSummary() as any,
       ]);
 
-      setDailyReport(salesResponse.data || null);
+      setDailyReport(salesResponse.data?.summary || null);
       setInventorySummary(inventoryResponse.data || null);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to fetch reports');
@@ -108,7 +108,7 @@ export default function Reports() {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Today's Sales"
-            value={`₹${dailyReport?.total_sales?.toFixed(2) || '0.00'}`}
+            value={`₹${Number(dailyReport?.total_sales || 0).toFixed(2)}`}
             icon={<TrendingUpIcon fontSize="inherit" />}
             color="#2e7d32"
           />
@@ -124,7 +124,7 @@ export default function Reports() {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Avg Order Value"
-            value={`₹${dailyReport?.avg_order_value?.toFixed(2) || '0.00'}`}
+            value={`₹${Number((dailyReport?.total_sales || 0) / Math.max(dailyReport?.total_orders || 1, 1)).toFixed(2)}`}
             icon={<PeopleIcon fontSize="inherit" />}
             color="#ed6c02"
           />
@@ -159,21 +159,21 @@ export default function Reports() {
                   <TableBody>
                     <TableRow>
                       <TableCell>CGST</TableCell>
-                      <TableCell align="right">₹{dailyReport?.total_cgst?.toFixed(2) || '0.00'}</TableCell>
+                      <TableCell align="right">₹{Number((dailyReport?.total_gst || 0) / 2).toFixed(2)}</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell>SGST</TableCell>
-                      <TableCell align="right">₹{dailyReport?.total_sgst?.toFixed(2) || '0.00'}</TableCell>
+                      <TableCell align="right">₹{Number((dailyReport?.total_gst || 0) / 2).toFixed(2)}</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell>IGST</TableCell>
-                      <TableCell align="right">₹{dailyReport?.total_igst?.toFixed(2) || '0.00'}</TableCell>
+                      <TableCell align="right">₹0.00</TableCell>
                     </TableRow>
                     <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
                       <TableCell><strong>Total GST</strong></TableCell>
                       <TableCell align="right">
                         <strong>
-                          ₹{((dailyReport?.total_cgst || 0) + (dailyReport?.total_sgst || 0) + (dailyReport?.total_igst || 0)).toFixed(2)}
+                          ₹{Number(dailyReport?.total_gst || 0).toFixed(2)}
                         </strong>
                       </TableCell>
                     </TableRow>
@@ -200,7 +200,7 @@ export default function Reports() {
                     </TableRow>
                     <TableRow>
                       <TableCell><strong>Total Inventory Value</strong></TableCell>
-                      <TableCell align="right">₹{inventorySummary?.total_value?.toFixed(2) || '0.00'}</TableCell>
+                      <TableCell align="right">₹{Number(inventorySummary?.total_value || 0).toFixed(2)}</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell><strong>Low Stock Items</strong></TableCell>
