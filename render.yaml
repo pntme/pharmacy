@@ -5,6 +5,7 @@ databases:
     plan: free
 
 services:
+  # Backend API Service
   - type: web
     name: pharmacy-backend
     runtime: node
@@ -25,3 +26,28 @@ services:
       - key: JWT_REFRESH_SECRET
         generateValue: true
     healthCheckPath: /api/v1/health
+
+  # Frontend Static Site
+  - type: web
+    name: pharmacy-frontend
+    runtime: static
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://pharmacy-backend-ayg4.onrender.com/api/v1
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
