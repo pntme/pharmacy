@@ -4,7 +4,7 @@ import sequelize from '../config/database';
 interface InventoryAttributes {
   inventory_id: number;
   product_id: number;
-  location_id: number;
+  location_id?: number;
   batch_number: string;
   lot_number?: string;
   serial_number?: string;
@@ -31,7 +31,7 @@ interface InventoryCreationAttributes extends Optional<InventoryAttributes, 'inv
 class Inventory extends Model<InventoryAttributes, InventoryCreationAttributes> implements InventoryAttributes {
   public inventory_id!: number;
   public product_id!: number;
-  public location_id!: number;
+  public location_id?: number;
   public batch_number!: string;
   public lot_number?: string;
   public serial_number?: string;
@@ -75,11 +75,8 @@ Inventory.init(
     },
     location_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'locations',
-        key: 'location_id',
-      },
+      allowNull: true,
+      // Foreign key to locations table - will be added when Location model is implemented
     },
     batch_number: {
       type: DataTypes.STRING(100),
@@ -144,10 +141,7 @@ Inventory.init(
     supplier_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
-      references: {
-        model: 'suppliers',
-        key: 'supplier_id',
-      },
+      // Foreign key to suppliers table - will be added when Supplier model is implemented
     },
     last_counted_date: {
       type: DataTypes.DATE,
