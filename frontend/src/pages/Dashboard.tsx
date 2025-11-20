@@ -16,8 +16,6 @@ import {
   ShoppingCart,
 } from '@mui/icons-material';
 import {
-  LineChart,
-  Line,
   AreaChart,
   Area,
   BarChart,
@@ -29,7 +27,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from 'recharts';
 import { inventoryAPI, salesAPI } from '../services/api';
