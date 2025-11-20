@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Typography,
   Box,
@@ -83,7 +83,7 @@ export default function Inventory() {
   const fetchInventory = async () => {
     setLoading(true);
     try {
-      const response = await inventoryAPI.getAll();
+      const response = await inventoryAPI.getAll() as any;
       setInventory(response.data || []);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to fetch inventory');
@@ -94,7 +94,7 @@ export default function Inventory() {
 
   const fetchExpiringItems = async () => {
     try {
-      const response = await inventoryAPI.getExpiring();
+      const response = await inventoryAPI.getExpiring() as any;
       setExpiringItems(response.data || []);
     } catch (error: any) {
       console.error('Failed to fetch expiring items:', error);
@@ -103,7 +103,7 @@ export default function Inventory() {
 
   const fetchProducts = async () => {
     try {
-      const response = await productsAPI.getAll();
+      const response = await productsAPI.getAll() as any;
       setProducts(response.data || []);
     } catch (error: any) {
       console.error('Failed to fetch products:', error);
@@ -238,7 +238,7 @@ export default function Inventory() {
       id: 'product',
       label: 'Product',
       minWidth: 200,
-      format: (value, row) => (
+      format: (_value, row) => (
         <Box>
           <Typography variant="body2" fontWeight="medium">
             {row.product?.product_name || 'Unknown'}
@@ -255,7 +255,7 @@ export default function Inventory() {
       label: 'Available',
       minWidth: 100,
       align: 'center',
-      format: (value, row) => (
+      format: (_value, row) => (
         <Box>
           <Typography variant="body2" fontWeight="bold" color="primary">
             {row.quantity_available || 0}
@@ -310,7 +310,7 @@ export default function Inventory() {
       id: 'bin_location',
       label: 'Location',
       minWidth: 120,
-      format: (value, row) => {
+      format: (_value, row) => {
         const location = [row.bin_location, row.rack_number, row.shelf_number]
           .filter(Boolean)
           .join('-');
@@ -338,7 +338,7 @@ export default function Inventory() {
         </Alert>
       )}
 
-      <Tabs value={currentTab} onChange={(e, newValue) => setCurrentTab(newValue)} sx={{ mb: 2 }}>
+      <Tabs value={currentTab} onChange={(_e, newValue) => setCurrentTab(newValue)} sx={{ mb: 2 }}>
         <Tab label="All Inventory" />
         <Tab label={`Expiring Items (${expiringItems.length})`} />
       </Tabs>

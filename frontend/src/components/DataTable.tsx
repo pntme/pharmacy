@@ -53,7 +53,7 @@ const DataTable: React.FC<DataTableProps> = ({
   onRowsPerPageChange,
   emptyMessage = 'No data available',
 }) => {
-  const handleChangePage = (event: unknown, newPage: number) => {
+  const handleChangePage = (_event: unknown, newPage: number) => {
     onPageChange?.(newPage);
   };
 

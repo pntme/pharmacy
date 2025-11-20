@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Typography,
   Box,
@@ -66,7 +66,7 @@ export default function Products() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const response = await productsAPI.getAll();
+      const response = await productsAPI.getAll() as any;
       setProducts(response.data || []);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to fetch products');
@@ -83,7 +83,7 @@ export default function Products() {
 
     setLoading(true);
     try {
-      const response = await productsAPI.search(searchQuery);
+      const response = await productsAPI.search(searchQuery) as any;
       setProducts(response.data || []);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Search failed');
