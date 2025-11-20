@@ -53,8 +53,8 @@ export default function Reports() {
     setLoading(true);
     try {
       const [salesResponse, inventoryResponse] = await Promise.all([
-        salesAPI.getDailyReport(),
-        inventoryAPI.getSummary(),
+        salesAPI.getDailyReport() as any,
+        inventoryAPI.getSummary() as any,
       ]);
 
       setDailyReport(salesResponse.data || null);

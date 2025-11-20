@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Typography,
   Box,
@@ -57,7 +57,7 @@ export default function Sales() {
   const fetchSales = async () => {
     setLoading(true);
     try {
-      const response = await salesAPI.getAll();
+      const response = await salesAPI.getAll() as any;
       setSales(response.data || []);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to fetch sales');
@@ -68,7 +68,7 @@ export default function Sales() {
 
   const handleViewOrder = async (order: SalesOrder) => {
     try {
-      const response = await salesAPI.getById(order.order_id);
+      const response = await salesAPI.getById(order.order_id) as any;
       setSelectedOrder(response.data);
       setViewDialog(true);
     } catch (error: any) {
@@ -130,7 +130,7 @@ export default function Sales() {
       id: 'patient',
       label: 'Customer',
       minWidth: 180,
-      format: (value, row) => {
+      format: (_value, row) => {
         if (row.patient) {
           return (
             <Box>

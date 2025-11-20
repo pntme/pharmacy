@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Typography,
   Box,
@@ -73,7 +73,7 @@ export default function Patients() {
   const fetchPatients = async () => {
     setLoading(true);
     try {
-      const response = await patientsAPI.getAll();
+      const response = await patientsAPI.getAll() as any;
       setPatients(response.data || []);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to fetch patients');
@@ -90,7 +90,7 @@ export default function Patients() {
 
     setLoading(true);
     try {
-      const response = await patientsAPI.search(searchQuery);
+      const response = await patientsAPI.search(searchQuery) as any;
       setPatients(response.data || []);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Search failed');
@@ -207,7 +207,7 @@ export default function Patients() {
       id: 'full_name',
       label: 'Name',
       minWidth: 180,
-      format: (value, row) => `${row.first_name} ${row.last_name}`,
+      format: (_value, row) => `${row.first_name} ${row.last_name}`,
     },
     {
       id: 'phone_number',
