@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Op } from 'sequelize';
+import { Op, QueryTypes } from 'sequelize';
 import SalesOrder from '../models/SalesOrder';
 import Product from '../models/Product';
 import Patient from '../models/Patient';
@@ -472,7 +472,7 @@ export const getCategoryBreakdown = async (req: Request, res: Response): Promise
       GROUP BY category
     `, {
       replacements: { thirtyDaysAgo },
-      type: sequelize.QueryTypes.SELECT as any,
+      type: QueryTypes.SELECT,
     });
 
     const colors = {
@@ -521,7 +521,7 @@ export const getTopSellingProducts = async (req: Request, res: Response): Promis
       LIMIT 5
     `, {
       replacements: { thirtyDaysAgo },
-      type: sequelize.QueryTypes.SELECT as any,
+      type: QueryTypes.SELECT,
     });
 
     res.json({
