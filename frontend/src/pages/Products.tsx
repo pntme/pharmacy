@@ -220,7 +220,10 @@ export default function Products() {
       label: 'MRP (₹)',
       minWidth: 100,
       align: 'right',
-      format: (value) => `₹${(value || 0).toFixed(2)}`,
+      format: (value) => {
+        const numValue = typeof value === 'number' ? value : parseFloat(value);
+        return isNaN(numValue) ? '₹0.00' : `₹${numValue.toFixed(2)}`;
+      },
     },
     {
       id: 'gst_rate',

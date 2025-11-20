@@ -50,6 +50,12 @@ export default function Sales() {
   const [selectedOrder, setSelectedOrder] = useState<SalesOrder | null>(null);
   const [viewDialog, setViewDialog] = useState(false);
 
+  // Helper function to safely format numbers
+  const formatCurrency = (value: any): string => {
+    const numValue = typeof value === 'number' ? value : parseFloat(value);
+    return isNaN(numValue) ? '0.00' : numValue.toFixed(2);
+  };
+
   useEffect(() => {
     fetchSales();
   }, []);
@@ -151,18 +157,25 @@ export default function Sales() {
       label: 'Subtotal',
       minWidth: 100,
       align: 'right',
-      format: (value) => `₹${(value || 0).toFixed(2)}`,
+      format: (value) => {
+        const numValue = typeof value === 'number' ? value : parseFloat(value);
+        return isNaN(numValue) ? '₹0.00' : `₹${numValue.toFixed(2)}`;
+      },
     },
     {
       id: 'total_amount',
       label: 'Total',
       minWidth: 120,
       align: 'right',
-      format: (value) => (
-        <Typography variant="body2" fontWeight="bold">
-          ₹{(value || 0).toFixed(2)}
-        </Typography>
-      ),
+      format: (value) => {
+        const numValue = typeof value === 'number' ? value : parseFloat(value);
+        const formatted = isNaN(numValue) ? '0.00' : numValue.toFixed(2);
+        return (
+          <Typography variant="body2" fontWeight="bold">
+            ₹{formatted}
+          </Typography>
+        );
+      },
     },
     {
       id: 'status',
@@ -337,7 +350,7 @@ export default function Sales() {
                       <Box sx={{ mt: 2 }}>
                         <Box display="flex" justifyContent="space-between" mb={1}>
                           <Typography variant="body2">Subtotal</Typography>
-                          <Typography variant="body2">₹{(selectedOrder.subtotal || 0).toFixed(2)}</Typography>
+                          <Typography variant="body2">₹{formatCurrency(selectedOrder.subtotal)}</Typography>
                         </Box>
                         {selectedOrder.discount_amount && selectedOrder.discount_amount > 0 && (
                           <Box display="flex" justifyContent="space-between" mb={1}>
@@ -345,45 +358,45 @@ export default function Sales() {
                               Discount
                             </Typography>
                             <Typography variant="body2" color="error">
-                              -₹{(selectedOrder.discount_amount || 0).toFixed(2)}
+                              -₹{formatCurrency(selectedOrder.discount_amount)}
                             </Typography>
                           </Box>
                         )}
                         {selectedOrder.cgst_amount && selectedOrder.cgst_amount > 0 && (
                           <Box display="flex" justifyContent="space-between" mb={1}>
                             <Typography variant="body2">CGST</Typography>
-                            <Typography variant="body2">₹{(selectedOrder.cgst_amount || 0).toFixed(2)}</Typography>
+                            <Typography variant="body2">₹{formatCurrency(selectedOrder.cgst_amount)}</Typography>
                           </Box>
                         )}
                         {selectedOrder.sgst_amount && selectedOrder.sgst_amount > 0 && (
                           <Box display="flex" justifyContent="space-between" mb={1}>
                             <Typography variant="body2">SGST</Typography>
-                            <Typography variant="body2">₹{(selectedOrder.sgst_amount || 0).toFixed(2)}</Typography>
+                            <Typography variant="body2">₹{formatCurrency(selectedOrder.sgst_amount)}</Typography>
                           </Box>
                         )}
                         {selectedOrder.igst_amount && selectedOrder.igst_amount > 0 && (
                           <Box display="flex" justifyContent="space-between" mb={1}>
                             <Typography variant="body2">IGST</Typography>
-                            <Typography variant="body2">₹{(selectedOrder.igst_amount || 0).toFixed(2)}</Typography>
+                            <Typography variant="body2">₹{formatCurrency(selectedOrder.igst_amount)}</Typography>
                           </Box>
                         )}
                         <Divider sx={{ my: 1 }} />
                         <Box display="flex" justifyContent="space-between" mb={2}>
                           <Typography variant="h6">Total Amount</Typography>
                           <Typography variant="h6" color="primary">
-                            ₹{(selectedOrder.total_amount || 0).toFixed(2)}
+                            ₹{formatCurrency(selectedOrder.total_amount)}
                           </Typography>
                         </Box>
                         <Box display="flex" justifyContent="space-between" mb={1}>
                           <Typography variant="body2">Amount Paid</Typography>
                           <Typography variant="body2">
-                            ₹{(selectedOrder.amount_paid || 0).toFixed(2)}
+                            ₹{formatCurrency(selectedOrder.amount_paid)}
                           </Typography>
                         </Box>
                         <Box display="flex" justifyContent="space-between">
                           <Typography variant="body2">Balance Due</Typography>
                           <Typography variant="body2" color={selectedOrder.balance_due && selectedOrder.balance_due > 0 ? 'error' : 'success'}>
-                            ₹{(selectedOrder.balance_due || 0).toFixed(2)}
+                            ₹{formatCurrency(selectedOrder.balance_due)}
                           </Typography>
                         </Box>
                         <Box sx={{ mt: 2 }}>
