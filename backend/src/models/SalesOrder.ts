@@ -7,7 +7,7 @@ interface SalesOrderAttributes {
   order_type: string;
   customer_type?: string;
   patient_id?: number;
-  location_id: number;
+  location_id?: number;
   order_date: Date;
   status: string;
   payment_status: string;
@@ -40,7 +40,7 @@ class SalesOrder extends Model<SalesOrderAttributes, SalesOrderCreationAttribute
   public order_type!: string;
   public customer_type?: string;
   public patient_id?: number;
-  public location_id!: number;
+  public location_id?: number;
   public order_date!: Date;
   public status!: string;
   public payment_status!: string;
@@ -101,11 +101,8 @@ SalesOrder.init(
     },
     location_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'locations',
-        key: 'location_id',
-      },
+      allowNull: true,
+      // Foreign key to locations table - will be added when Location model is implemented
     },
     order_date: {
       type: DataTypes.DATE,
