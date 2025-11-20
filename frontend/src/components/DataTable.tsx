@@ -61,6 +61,9 @@ const DataTable: React.FC<DataTableProps> = ({
     onRowsPerPageChange?.(parseInt(event.target.value, 10));
   };
 
+  // Ensure data is always an array
+  const safeData = Array.isArray(data) ? data : [];
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
@@ -69,7 +72,7 @@ const DataTable: React.FC<DataTableProps> = ({
     );
   }
 
-  if (!data || data.length === 0) {
+  if (!safeData || safeData.length === 0) {
     return (
       <Paper sx={{ p: 4, textAlign: 'center' }}>
         <Typography variant="body1" color="text.secondary">
@@ -106,7 +109,7 @@ const DataTable: React.FC<DataTableProps> = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            {data.map((row, index) => (
+            {safeData.map((row, index) => (
               <TableRow hover key={row.id || index}>
                 {columns.map((column) => {
                   const value = row[column.id];
