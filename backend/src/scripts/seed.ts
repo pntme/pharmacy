@@ -41,13 +41,28 @@ async function seedDatabase() {
     await sequelize.sync({ alter: true });
     console.log('✅ Database synced');
 
-    // Clear existing data (optional - comment out if you want to keep existing data)
-    await SalesOrderItem.destroy({ where: {}, truncate: true, cascade: true });
-    await SalesOrder.destroy({ where: {}, truncate: true, cascade: true });
-    await Inventory.destroy({ where: {}, truncate: true, cascade: true });
-    await Product.destroy({ where: {}, truncate: true, cascade: true });
-    await Patient.destroy({ where: {}, truncate: true, cascade: true });
-    console.log('✅ Cleared existing data');
+    // Check if database already has data (unless FORCE_SEED is set)
+    const forceSeed = process.env.FORCE_SEED === 'true';
+    const productCount = await Product.count();
+
+    if (productCount > 0 && !forceSeed) {
+      console.log(`ℹ️  Database already contains ${productCount} products. Skipping seed.`);
+      console.log('💡 To re-seed, set environment variable FORCE_SEED=true or clear the database manually');
+      process.exit(0);
+    }
+
+    if (forceSeed && productCount > 0) {
+      console.log('⚠️  FORCE_SEED enabled. Clearing existing data...');
+      // Clear existing data when forced
+      await SalesOrderItem.destroy({ where: {}, truncate: true, cascade: true });
+      await SalesOrder.destroy({ where: {}, truncate: true, cascade: true });
+      await Inventory.destroy({ where: {}, truncate: true, cascade: true });
+      await Product.destroy({ where: {}, truncate: true, cascade: true });
+      await Patient.destroy({ where: {}, truncate: true, cascade: true });
+      console.log('✅ Cleared existing data');
+    }
+
+    console.log('📭 Database is empty. Starting seed process...');
 
     // Ensure admin role exists
     let adminRole = await Role.findOne({ where: { role_name: 'admin' } });
