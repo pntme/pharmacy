@@ -35,9 +35,9 @@ export default function Dashboard() {
       ]);
 
       setStats({
-        todaySales: salesReport?.data?.summary?.total_sales || 0,
-        totalOrders: salesReport?.data?.summary?.total_orders || 0,
-        lowStock: inventorySummary?.data?.low_stock_count || 0,
+        todaySales: (salesReport as any)?.summary?.total_sales || 0,
+        totalOrders: (salesReport as any)?.summary?.total_orders || 0,
+        lowStock: (inventorySummary as any)?.low_stock_count || 0,
         patients: 0,
       });
     } catch (error) {

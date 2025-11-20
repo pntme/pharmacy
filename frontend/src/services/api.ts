@@ -34,8 +34,8 @@ class APIService {
           const refreshToken = localStorage.getItem('refreshToken');
           if (refreshToken) {
             try {
-              const response = await this.post('/auth/refresh-token', { refreshToken });
-              const { accessToken } = response.data;
+              const response = await this.post<{ accessToken: string }>('/auth/refresh-token', { refreshToken });
+              const { accessToken } = response;
               localStorage.setItem('accessToken', accessToken);
 
               // Retry the original request
