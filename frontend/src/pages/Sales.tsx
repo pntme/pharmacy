@@ -314,7 +314,7 @@ export default function Sales() {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {selectedOrder.items.map((item: any, index: number) => (
+                        {Array.isArray(selectedOrder.items) && selectedOrder.items.map((item: any, index: number) => (
                           <TableRow key={index}>
                             <TableCell>{item.product_name || 'Product'}</TableCell>
                             <TableCell align="center">{item.quantity}</TableCell>

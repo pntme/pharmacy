@@ -382,7 +382,7 @@ export default function Inventory() {
                 disabled={!!selectedItem}
               >
                 <MenuItem value="">Select Product</MenuItem>
-                {products.map((product) => (
+                {Array.isArray(products) && products.map((product) => (
                   <MenuItem key={product.product_id} value={product.product_id.toString()}>
                     {product.product_name} ({product.item_code})
                   </MenuItem>
