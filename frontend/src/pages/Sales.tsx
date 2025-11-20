@@ -64,7 +64,7 @@ export default function Sales() {
     setLoading(true);
     try {
       const response = await salesAPI.getAll() as any;
-      setSales(response.data?.orders || []);
+      setSales(response.data?.sales || []);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to fetch sales');
     } finally {
