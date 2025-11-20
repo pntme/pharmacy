@@ -152,6 +152,7 @@ async function seedDatabase() {
 
         // Calculate order totals
         let subtotal = 0;
+        let total_gst = 0;
         const orderItems: any[] = [];
 
         for (const product of selectedProducts) {
@@ -162,6 +163,7 @@ async function seedDatabase() {
           const gst_amount = (total_price * gst_rate) / (100 + gst_rate);
 
           subtotal += total_price;
+          total_gst += gst_amount;
 
           orderItems.push({
             order_number: orderNumber,
@@ -176,9 +178,9 @@ async function seedDatabase() {
           });
         }
 
-        // Calculate GST breakdown
-        const cgst_amount = subtotal * 0.06; // Assuming 12% GST split as 6% CGST + 6% SGST
-        const sgst_amount = subtotal * 0.06;
+        // Calculate GST breakdown (split into CGST and SGST for intra-state)
+        const cgst_amount = total_gst / 2;
+        const sgst_amount = total_gst / 2;
         const igst_amount = 0;
         const total_amount = subtotal;
 
