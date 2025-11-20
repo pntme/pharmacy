@@ -41,14 +41,12 @@ export default function Dashboard() {
   const [salesTrendData, setSalesTrendData] = useState<any[]>([]);
   const [categoryData, setCategoryData] = useState<any[]>([]);
   const [topProductsData, setTopProductsData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadDashboardData();
   }, []);
 
   const loadDashboardData = async () => {
-    setLoading(true);
     try {
       const [dashboardStats, weeklySales, categoryBreakdown, topProducts, inventorySummary] = await Promise.all([
         salesAPI.getDashboardStats(),
@@ -59,15 +57,15 @@ export default function Dashboard() {
       ]);
 
       setStats({
-        todaySales: (salesReport as any)?.summary?.total_sales || 0,
-        totalOrders: (salesReport as any)?.summary?.total_orders || 0,
-        lowStock: (inventorySummary as any)?.low_stock_count || 0,
-        patients: 0,
+        todaySales: (dashboardStats as any)?.data?.today_sales || 0,
+        totalOrders: (dashboardStats as any)?.data?.total_orders || 0,
+        lowStock: (inventorySummary as any)?.data?.low_stock_count || 0,
+        patients: (dashboardStats as any)?.data?.total_patients || 0,
       });
 
-      setSalesTrendData(weeklySales?.data || []);
-      setCategoryData(categoryBreakdown?.data || []);
-      setTopProductsData(topProducts?.data || []);
+      setSalesTrendData((weeklySales as any)?.data || []);
+      setCategoryData((categoryBreakdown as any)?.data || []);
+      setTopProductsData((topProducts as any)?.data || []);
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
       // Set fallback data on error
@@ -82,8 +80,6 @@ export default function Dashboard() {
       ]);
       setCategoryData([]);
       setTopProductsData([]);
-    } finally {
-      setLoading(false);
     }
   };
 
