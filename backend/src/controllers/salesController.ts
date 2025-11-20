@@ -391,3 +391,189 @@ export const cancelSale = async (req: Request, res: Response): Promise<void> => 
     });
   }
 };
+
+// Dashboard API Endpoints
+
+export const getWeeklySalesTrend = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const today = new Date();
+    const sevenDaysAgo = new Date(today);
+    sevenDaysAgo.setDate(today.getDate() - 6);
+
+    const sales = await SalesOrder.findAll({
+      where: {
+        order_date: {
+          [Op.between]: [sevenDaysAgo, today],
+        },
+        status: { [Op.in]: ['completed', 'ready'] },
+      },
+      attributes: ['order_date', 'total_amount'],
+    });
+
+    // Group by day
+    const dailySales = new Map();
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    // Initialize all days with 0
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(sevenDaysAgo);
+      date.setDate(date.getDate() + i);
+      const dayName = dayNames[date.getDay()];
+      dailySales.set(dayName, { day: dayName, sales: 0, orders: 0 });
+    }
+
+    // Aggregate sales by day
+    sales.forEach(sale => {
+      const date = new Date(sale.order_date);
+      const dayName = dayNames[date.getDay()];
+      const existing = dailySales.get(dayName);
+      if (existing) {
+        existing.sales += Number(sale.total_amount);
+        existing.orders += 1;
+      }
+    });
+
+    const result = Array.from(dailySales.values());
+
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    logger.error('Get weekly sales trend error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+};
+
+export const getCategoryBreakdown = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const result = await sequelize.query(`
+      SELECT
+        CASE
+          WHEN p.schedule IN ('H', 'H1', 'X') THEN 'Prescription'
+          WHEN p.schedule = 'OTC' AND p.dosage_form IN ('Tablet', 'Capsule', 'Syrup', 'Injection') THEN 'OTC'
+          WHEN p.dosage_form = 'Powder' OR p.generic_name = 'Herbal' THEN 'Ayurvedic'
+          ELSE 'Surgical'
+        END as category,
+        COUNT(DISTINCT soi.order_item_id) as count,
+        SUM(soi.total_price) as total_value
+      FROM sales_order_items soi
+      JOIN sales_orders so ON soi.order_number = so.order_number
+      JOIN products p ON soi.product_id = p.product_id
+      WHERE so.order_date >= :thirtyDaysAgo
+        AND so.status IN ('completed', 'ready')
+      GROUP BY category
+    `, {
+      replacements: { thirtyDaysAgo },
+      type: sequelize.QueryTypes.SELECT as any,
+    });
+
+    const colors = {
+      Prescription: '#953553',
+      OTC: '#2196f3',
+      Ayurvedic: '#4caf50',
+      Surgical: '#ff9800',
+    };
+
+    const formatted = (result as any[]).map((row: any) => ({
+      name: row.category,
+      value: parseInt(row.count),
+      color: colors[row.category as keyof typeof colors] || '#666',
+    }));
+
+    res.json({
+      success: true,
+      data: formatted,
+    });
+  } catch (error) {
+    logger.error('Get category breakdown error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+};
+
+export const getTopSellingProducts = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const result = await sequelize.query(`
+      SELECT
+        p.product_name as name,
+        SUM(soi.quantity) as sales
+      FROM sales_order_items soi
+      JOIN sales_orders so ON soi.order_number = so.order_number
+      JOIN products p ON soi.product_id = p.product_id
+      WHERE so.order_date >= :thirtyDaysAgo
+        AND so.status IN ('completed', 'ready')
+      GROUP BY p.product_id, p.product_name
+      ORDER BY sales DESC
+      LIMIT 5
+    `, {
+      replacements: { thirtyDaysAgo },
+      type: sequelize.QueryTypes.SELECT as any,
+    });
+
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    logger.error('Get top selling products error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+};
+
+export const getDashboardStats = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const today = new Date();
+    const startOfToday = new Date(today.setHours(0, 0, 0, 0));
+    const endOfToday = new Date(today.setHours(23, 59, 59, 999));
+
+    // Today's sales
+    const todaySales = await SalesOrder.findAll({
+      where: {
+        order_date: {
+          [Op.between]: [startOfToday, endOfToday],
+        },
+        status: { [Op.in]: ['completed', 'ready'] },
+      },
+    });
+
+    const todayTotalSales = todaySales.reduce((sum, sale) => sum + Number(sale.total_amount), 0);
+    const todayTotalOrders = todaySales.length;
+
+    // Patients count
+    const patientsCount = await Patient.count();
+
+    res.json({
+      success: true,
+      data: {
+        todaySales: todayTotalSales,
+        totalOrders: todayTotalOrders,
+        patients: patientsCount,
+      },
+    });
+  } catch (error) {
+    logger.error('Get dashboard stats error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+};

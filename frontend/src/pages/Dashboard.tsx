@@ -38,15 +38,23 @@ export default function Dashboard() {
     lowStock: 0,
     patients: 0,
   });
+  const [salesTrendData, setSalesTrendData] = useState<any[]>([]);
+  const [categoryData, setCategoryData] = useState<any[]>([]);
+  const [topProductsData, setTopProductsData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadDashboardData();
   }, []);
 
   const loadDashboardData = async () => {
+    setLoading(true);
     try {
-      const [salesReport, inventorySummary] = await Promise.all([
-        salesAPI.getDailyReport({}),
+      const [dashboardStats, weeklySales, categoryBreakdown, topProducts, inventorySummary] = await Promise.all([
+        salesAPI.getDashboardStats(),
+        salesAPI.getWeeklySalesTrend(),
+        salesAPI.getCategoryBreakdown(),
+        salesAPI.getTopProducts(),
         inventoryAPI.getSummary({}),
       ]);
 
@@ -56,36 +64,28 @@ export default function Dashboard() {
         lowStock: (inventorySummary as any)?.low_stock_count || 0,
         patients: 0,
       });
+
+      setSalesTrendData(weeklySales?.data || []);
+      setCategoryData(categoryBreakdown?.data || []);
+      setTopProductsData(topProducts?.data || []);
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
+      // Set fallback data on error
+      setSalesTrendData([
+        { day: 'Mon', sales: 0, orders: 0 },
+        { day: 'Tue', sales: 0, orders: 0 },
+        { day: 'Wed', sales: 0, orders: 0 },
+        { day: 'Thu', sales: 0, orders: 0 },
+        { day: 'Fri', sales: 0, orders: 0 },
+        { day: 'Sat', sales: 0, orders: 0 },
+        { day: 'Sun', sales: 0, orders: 0 },
+      ]);
+      setCategoryData([]);
+      setTopProductsData([]);
+    } finally {
+      setLoading(false);
     }
   };
-
-  // Sample data for charts - in real app, this would come from API
-  const salesTrendData = [
-    { day: 'Mon', sales: 45000, orders: 42 },
-    { day: 'Tue', sales: 52000, orders: 48 },
-    { day: 'Wed', sales: 48000, orders: 45 },
-    { day: 'Thu', sales: 61000, orders: 58 },
-    { day: 'Fri', sales: 55000, orders: 52 },
-    { day: 'Sat', sales: 67000, orders: 64 },
-    { day: 'Sun', sales: 43000, orders: 40 },
-  ];
-
-  const categoryData = [
-    { name: 'Prescription', value: 45, color: '#953553' },
-    { name: 'OTC', value: 30, color: '#2196f3' },
-    { name: 'Ayurvedic', value: 15, color: '#4caf50' },
-    { name: 'Surgical', value: 10, color: '#ff9800' },
-  ];
-
-  const topProductsData = [
-    { name: 'Dolo 650mg', sales: 156 },
-    { name: 'Azithromycin', sales: 134 },
-    { name: 'Paracetamol', sales: 128 },
-    { name: 'Amoxicillin', sales: 98 },
-    { name: 'Crocin', sales: 87 },
-  ];
 
   const StatCard = ({ title, value, icon, color, index }: any) => (
     <Grow in timeout={300 + index * 100}>
@@ -174,7 +174,7 @@ export default function Dashboard() {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Today's Sales"
-            value={stats.todaySales || 45000}
+            value={stats.todaySales}
             icon={<TrendingUp sx={{ color: 'white', fontSize: 32 }} />}
             color="#953553"
             index={0}
@@ -183,7 +183,7 @@ export default function Dashboard() {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Total Orders"
-            value={stats.totalOrders || 42}
+            value={stats.totalOrders}
             icon={<ShoppingCart sx={{ color: 'white', fontSize: 32 }} />}
             color="#2196f3"
             index={1}
@@ -192,7 +192,7 @@ export default function Dashboard() {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Low Stock Items"
-            value={stats.lowStock || 8}
+            value={stats.lowStock}
             icon={<Inventory sx={{ color: 'white', fontSize: 32 }} />}
             color="#ff9800"
             index={2}
@@ -201,7 +201,7 @@ export default function Dashboard() {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Total Patients"
-            value={stats.patients || 234}
+            value={stats.patients}
             icon={<People sx={{ color: 'white', fontSize: 32 }} />}
             color="#9c27b0"
             index={3}

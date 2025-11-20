@@ -184,6 +184,19 @@ export const salesAPI = {
 
   cancel: (id: number, reason: string) =>
     apiService.post(`/sales/${id}/cancel`, { reason }),
+
+  // Dashboard endpoints
+  getDashboardStats: () =>
+    apiService.get('/sales/dashboard/stats'),
+
+  getWeeklySalesTrend: () =>
+    apiService.get('/sales/dashboard/weekly-trend'),
+
+  getCategoryBreakdown: () =>
+    apiService.get('/sales/dashboard/category-breakdown'),
+
+  getTopProducts: () =>
+    apiService.get('/sales/dashboard/top-products'),
 };
 
 export default apiService;

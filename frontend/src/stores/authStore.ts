@@ -7,6 +7,7 @@ interface User {
   email: string;
   full_name: string;
   role_id: number;
+  role?: string;
   location_id?: number;
 }
 
