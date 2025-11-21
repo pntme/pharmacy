@@ -120,7 +120,9 @@ export const searchProducts = async (req: Request, res: Response): Promise<void>
 
     res.json({
       success: true,
-      data: products,
+      data: {
+        products,
+      },
     });
   } catch (error) {
     logger.error('Search products error:', error);

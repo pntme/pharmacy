@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Typography,
   Box,
@@ -6,6 +6,8 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogActions,
+  Button,
   Table,
   TableBody,
   TableCell,
@@ -20,9 +22,11 @@ import {
 } from '@mui/material';
 import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
-import { Search as SearchIcon } from '@mui/icons-material';
+import { Search as SearchIcon, Print as PrintIcon } from '@mui/icons-material';
+import { useReactToPrint } from 'react-to-print';
 import DataTable, { Column } from '../components/DataTable';
 import { salesAPI } from '../services/api';
+import ThermalInvoice from '../components/ThermalInvoice';
 
 interface SalesOrder {
   order_id: number;
@@ -68,6 +72,7 @@ export default function Sales() {
   const [selectedOrder, setSelectedOrder] = useState<SalesOrder | null>(null);
   const [viewDialog, setViewDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const printRef = useRef<HTMLDivElement>(null);
 
   // Helper function to safely format numbers
   const formatCurrency = (value: any): string => {
@@ -132,6 +137,12 @@ export default function Sales() {
     setViewDialog(false);
     setSelectedOrder(null);
   };
+
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current,
+    documentTitle: `Invoice-${selectedOrder?.order_number}`,
+    onAfterPrint: () => toast.success('Invoice printed successfully'),
+  });
 
   const getStatusColor = (status: string) => {
     const statusColors: Record<string, 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'> = {
@@ -499,7 +510,53 @@ export default function Sales() {
             </Box>
           )}
         </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={handleCloseDialog} color="inherit">
+            Close
+          </Button>
+          <Button
+            onClick={handlePrint}
+            variant="contained"
+            startIcon={<PrintIcon />}
+            disabled={!selectedOrder}
+          >
+            Print Invoice
+          </Button>
+        </DialogActions>
       </Dialog>
+
+      {/* Hidden Thermal Invoice Component for Printing */}
+      {selectedOrder && (
+        <Box sx={{ display: 'none' }}>
+          <ThermalInvoice
+            ref={printRef}
+            orderNumber={selectedOrder.order_number}
+            orderDate={selectedOrder.order_date}
+            customerName={
+              selectedOrder.patient
+                ? `${selectedOrder.patient.first_name} ${selectedOrder.patient.last_name}`
+                : undefined
+            }
+            customerPhone={selectedOrder.patient?.phone_number}
+            items={
+              selectedOrder.SalesOrderItems?.map(item => ({
+                product_name: item.Product?.product_name || 'Unknown Product',
+                quantity: item.quantity,
+                unit_price: item.unit_price,
+                total_price: item.total_price,
+                discount_amount: item.discount_amount,
+              })) || []
+            }
+            subtotal={selectedOrder.subtotal}
+            discountAmount={selectedOrder.discount_amount}
+            cgstAmount={selectedOrder.cgst_amount}
+            sgstAmount={selectedOrder.sgst_amount}
+            igstAmount={selectedOrder.igst_amount}
+            totalAmount={selectedOrder.total_amount}
+            amountPaid={selectedOrder.amount_paid}
+          />
+        </Box>
+      )}
     </Box>
   );
 }
