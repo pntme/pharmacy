@@ -14,12 +14,15 @@ import {
   Tabs,
   Tab,
   Alert,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
-import { Add as AddIcon, Warning as WarningIcon } from '@mui/icons-material';
+import { Add as AddIcon, Warning as WarningIcon, Search as SearchIcon, QrCodeScanner as ScanIcon } from '@mui/icons-material';
 import { toast } from 'react-hot-toast';
 import { format } from 'date-fns';
 import DataTable, { Column } from '../components/DataTable';
 import DeleteConfirmDialog from '../components/DeleteConfirmDialog';
+import BarcodeScanner from '../components/BarcodeScanner';
 import { inventoryAPI, productsAPI } from '../services/api';
 
 interface InventoryItem {
@@ -51,6 +54,7 @@ interface Product {
 
 export default function Inventory() {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [allInventory, setAllInventory] = useState<InventoryItem[]>([]);
   const [expiringItems, setExpiringItems] = useState<InventoryItem[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
@@ -58,6 +62,8 @@ export default function Inventory() {
   const [openDialog, setOpenDialog] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [scannerOpen, setScannerOpen] = useState(false);
   const [formData, setFormData] = useState({
     product_id: '',
     batch_number: '',
@@ -80,11 +86,40 @@ export default function Inventory() {
     fetchProducts();
   }, []);
 
+  // Filter inventory based on search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setInventory(allInventory);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase();
+    const filtered = allInventory.filter(item => {
+      const productName = item.product?.product_name?.toLowerCase() || '';
+      const itemCode = item.product?.item_code?.toLowerCase() || '';
+      const batchNumber = item.batch_number?.toLowerCase() || '';
+      const binLocation = item.bin_location?.toLowerCase() || '';
+      const rackNumber = item.rack_number?.toLowerCase() || '';
+      const shelfNumber = item.shelf_number?.toLowerCase() || '';
+
+      return productName.includes(query) ||
+             itemCode.includes(query) ||
+             batchNumber.includes(query) ||
+             binLocation.includes(query) ||
+             rackNumber.includes(query) ||
+             shelfNumber.includes(query);
+    });
+
+    setInventory(filtered);
+  }, [searchQuery, allInventory]);
+
   const fetchInventory = async () => {
     setLoading(true);
     try {
       const response = await inventoryAPI.getAll() as any;
-      setInventory(response.data?.inventory || []);
+      const inventoryData = response.data?.inventory || [];
+      setAllInventory(inventoryData);
+      setInventory(inventoryData);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to fetch inventory');
     } finally {
@@ -143,6 +178,11 @@ export default function Inventory() {
       });
     }
     setOpenDialog(true);
+  };
+
+  const handleBarcodeScan = (barcode: string) => {
+    setSearchQuery(barcode);
+    toast.success(`Barcode scanned: ${barcode}`);
   };
 
   const handleCloseDialog = () => {
@@ -344,6 +384,33 @@ export default function Inventory() {
         </Alert>
       )}
 
+      <Box sx={{ mb: 3 }}>
+        <TextField
+          fullWidth
+          placeholder="Search by product name, item code, batch number, or location..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  size="small"
+                  onClick={() => setScannerOpen(true)}
+                  title="Scan Barcode"
+                >
+                  <ScanIcon />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
+
       <Tabs value={currentTab} onChange={(_e, newValue) => setCurrentTab(newValue)} sx={{ mb: 2 }}>
         <Tab label="All Inventory" />
         <Tab label={`Expiring Items (${expiringItems?.length || 0})`} />
@@ -519,6 +586,14 @@ export default function Inventory() {
           setDeleteDialog(false);
           setSelectedItem(null);
         }}
+      />
+
+      {/* Barcode Scanner */}
+      <BarcodeScanner
+        open={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        onScan={handleBarcodeScan}
+        title="Scan Product Barcode"
       />
     </Box>
   );

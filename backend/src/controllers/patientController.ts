@@ -111,7 +111,9 @@ export const searchPatients = async (req: Request, res: Response): Promise<void>
 
     res.json({
       success: true,
-      data: patients,
+      data: {
+        patients,
+      },
     });
   } catch (error) {
     logger.error('Search patients error:', error);
