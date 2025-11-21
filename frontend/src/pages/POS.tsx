@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Grid,
@@ -12,8 +12,10 @@ import {
   TableHead,
   TableRow,
   IconButton,
+  InputAdornment,
+  CircularProgress,
 } from '@mui/material';
-import { Delete, Add } from '@mui/icons-material';
+import { Delete, Add, Search as SearchIcon } from '@mui/icons-material';
 import { productsAPI, salesAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -21,15 +23,36 @@ export default function POS() {
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState<any[]>([]);
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searching, setSearching] = useState(false);
+
+  // Auto-search as user types (debounced)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (search.trim().length >= 2) {
+        handleSearch();
+      } else if (search.trim().length === 0) {
+        setSearchResults([]);
+      }
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const handleSearch = async () => {
-    if (!search.trim()) return;
+    if (!search.trim()) {
+      setSearchResults([]);
+      return;
+    }
 
+    setSearching(true);
     try {
       const response: any = await productsAPI.search(search);
       setSearchResults(response.data?.products || []);
     } catch (error) {
       toast.error('Failed to search products');
+      setSearchResults([]);
+    } finally {
+      setSearching(false);
     }
   };
 
@@ -104,10 +127,26 @@ export default function POS() {
               label="Search Products"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              placeholder="Search by product name, generic name, or item code..."
+              placeholder="Search by product name, generic name, or item code... (type at least 2 characters)"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    {searching ? <CircularProgress size={20} /> : <SearchIcon />}
+                  </InputAdornment>
+                ),
+              }}
             />
             <Box sx={{ mt: 2, maxHeight: 400, overflow: 'auto' }}>
+              {searchResults.length === 0 && search.trim().length >= 2 && !searching && (
+                <Typography color="text.secondary" align="center" sx={{ py: 4 }}>
+                  No products found for "{search}"
+                </Typography>
+              )}
+              {searchResults.length === 0 && search.trim().length === 0 && (
+                <Typography color="text.secondary" align="center" sx={{ py: 4 }}>
+                  Start typing to search for products...
+                </Typography>
+              )}
               {Array.isArray(searchResults) && searchResults.map((product) => (
                 <Paper
                   key={product.product_id}

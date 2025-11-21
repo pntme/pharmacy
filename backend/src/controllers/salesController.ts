@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { Op, QueryTypes } from 'sequelize';
 import SalesOrder from '../models/SalesOrder';
+import SalesOrderItem from '../models/SalesOrderItem';
 import Product from '../models/Product';
 import Patient from '../models/Patient';
 import Inventory from '../models/Inventory';
@@ -263,6 +264,15 @@ export const getSaleById = async (req: Request, res: Response): Promise<void> =>
           model: Patient,
           attributes: ['patient_id', 'patient_code', 'first_name', 'last_name', 'phone_number'],
         },
+        {
+          model: SalesOrderItem,
+          include: [
+            {
+              model: Product,
+              attributes: ['product_id', 'product_name', 'item_code', 'generic_name'],
+            },
+          ],
+        },
       ],
     });
 
@@ -276,7 +286,9 @@ export const getSaleById = async (req: Request, res: Response): Promise<void> =>
 
     res.json({
       success: true,
-      data: sale,
+      data: {
+        order: sale,
+      },
     });
   } catch (error) {
     logger.error('Get sale error:', error);

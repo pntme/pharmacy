@@ -21,6 +21,7 @@ interface InventoryAttributes {
   status: string;
   supplier_id?: number;
   last_counted_date?: Date;
+  invoice_url?: string;
   notes?: string;
   created_at?: Date;
   updated_at?: Date;
@@ -48,6 +49,7 @@ class Inventory extends Model<InventoryAttributes, InventoryCreationAttributes> 
   public status!: string;
   public supplier_id?: number;
   public last_counted_date?: Date;
+  public invoice_url?: string;
   public notes?: string;
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
@@ -147,6 +149,10 @@ Inventory.init(
       type: DataTypes.DATE,
       allowNull: true,
     },
+    invoice_url: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
+    },
     notes: {
       type: DataTypes.TEXT,
       allowNull: true,
@@ -158,6 +164,12 @@ Inventory.init(
     updated_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
+    },
+    quantity_available: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.getDataValue('quantity_on_hand') - this.getDataValue('quantity_allocated');
+      },
     },
   },
   {

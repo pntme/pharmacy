@@ -70,6 +70,19 @@ export default function Patients() {
     fetchPatients();
   }, []);
 
+  // Auto-search as user types (debounced)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery.trim()) {
+        handleSearch();
+      } else {
+        fetchPatients();
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const fetchPatients = async () => {
     setLoading(true);
     try {
