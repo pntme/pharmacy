@@ -14,8 +14,10 @@ import {
   Tabs,
   Tab,
   Alert,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
-import { Add as AddIcon, Warning as WarningIcon } from '@mui/icons-material';
+import { Add as AddIcon, Warning as WarningIcon, CloudUpload as UploadIcon, Visibility as ViewIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { toast } from 'react-hot-toast';
 import { format } from 'date-fns';
 import DataTable, { Column } from '../components/DataTable';
@@ -41,6 +43,7 @@ interface InventoryItem {
   bin_location?: string;
   rack_number?: string;
   shelf_number?: string;
+  invoice_url?: string;
 }
 
 interface Product {
@@ -211,6 +214,74 @@ export default function Inventory() {
     }
   };
 
+  const handleUploadInvoice = async (item: InventoryItem, event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File size must be less than 10MB');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('invoice', file);
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1/inventory/${item.inventory_id}/upload-invoice`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      toast.success('Invoice uploaded successfully');
+      fetchInventory();
+      fetchExpiringItems();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to upload invoice');
+    }
+
+    // Reset input
+    event.target.value = '';
+  };
+
+  const handleViewInvoice = (item: InventoryItem) => {
+    if (!item.invoice_url) return;
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const invoiceUrl = `${baseUrl}${item.invoice_url}`;
+    window.open(invoiceUrl, '_blank');
+  };
+
+  const handleDeleteInvoice = async (item: InventoryItem) => {
+    if (!window.confirm('Are you sure you want to delete this invoice?')) return;
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1/inventory/${item.inventory_id}/delete-invoice`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Delete failed');
+      }
+
+      toast.success('Invoice deleted successfully');
+      fetchInventory();
+      fetchExpiringItems();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete invoice');
+    }
+  };
+
   const getExpiryColor = (expiryDate: string) => {
     const today = new Date();
     const expiry = new Date(expiryDate);
@@ -322,6 +393,62 @@ export default function Inventory() {
           .join('-');
         return location || '-';
       },
+    },
+    {
+      id: 'invoice_url',
+      label: 'Invoice',
+      minWidth: 120,
+      align: 'center',
+      format: (_value, row) => (
+        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+          {row.invoice_url ? (
+            <>
+              <Tooltip title="View Invoice">
+                <IconButton
+                  size="small"
+                  color="primary"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewInvoice(row);
+                  }}
+                >
+                  <ViewIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Delete Invoice">
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteInvoice(row);
+                  }}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </>
+          ) : (
+            <Tooltip title="Upload Invoice">
+              <IconButton
+                size="small"
+                color="default"
+                component="label"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <UploadIcon fontSize="small" />
+                <input
+                  type="file"
+                  hidden
+                  accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                  onChange={(e) => handleUploadInvoice(row, e)}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </IconButton>
+            </Tooltip>
+          )}
+        </Box>
+      ),
     },
   ];
 

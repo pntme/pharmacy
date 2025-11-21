@@ -4,6 +4,8 @@ import Inventory from '../models/Inventory';
 import Product from '../models/Product';
 import logger from '../utils/logger';
 import moment from 'moment';
+import path from 'path';
+import { deleteFile } from '../middleware/upload';
 
 export const getAllInventory = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -343,6 +345,111 @@ export const getStockSummary = async (req: Request, res: Response): Promise<void
     });
   } catch (error) {
     logger.error('Get stock summary error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+};
+
+export const uploadInvoice = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    if (!req.file) {
+      res.status(400).json({
+        success: false,
+        message: 'No file uploaded',
+      });
+      return;
+    }
+
+    const inventory = await Inventory.findByPk(id);
+
+    if (!inventory) {
+      // Delete uploaded file if inventory not found
+      if (req.file) {
+        deleteFile(req.file.path);
+      }
+      res.status(404).json({
+        success: false,
+        message: 'Inventory not found',
+      });
+      return;
+    }
+
+    // Delete old invoice if exists
+    if (inventory.invoice_url) {
+      const oldFilePath = path.join(__dirname, '../../', inventory.invoice_url);
+      deleteFile(oldFilePath);
+    }
+
+    // Update inventory with new invoice URL
+    const invoiceUrl = `/uploads/invoices/${req.file.filename}`;
+    await inventory.update({ invoice_url: invoiceUrl });
+
+    logger.info(`Invoice uploaded for inventory ID ${id}: ${invoiceUrl}`);
+
+    res.json({
+      success: true,
+      message: 'Invoice uploaded successfully',
+      data: {
+        inventory_id: inventory.inventory_id,
+        invoice_url: invoiceUrl,
+      },
+    });
+  } catch (error) {
+    // Clean up uploaded file on error
+    if (req.file) {
+      deleteFile(req.file.path);
+    }
+    logger.error('Upload invoice error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+};
+
+export const deleteInvoice = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const inventory = await Inventory.findByPk(id);
+
+    if (!inventory) {
+      res.status(404).json({
+        success: false,
+        message: 'Inventory not found',
+      });
+      return;
+    }
+
+    if (!inventory.invoice_url) {
+      res.status(400).json({
+        success: false,
+        message: 'No invoice attached to this inventory',
+      });
+      return;
+    }
+
+    // Delete file from filesystem
+    const filePath = path.join(__dirname, '../../', inventory.invoice_url);
+    deleteFile(filePath);
+
+    // Update inventory to remove invoice URL
+    await inventory.update({ invoice_url: null });
+
+    logger.info(`Invoice deleted for inventory ID ${id}`);
+
+    res.json({
+      success: true,
+      message: 'Invoice deleted successfully',
+    });
+  } catch (error) {
+    logger.error('Delete invoice error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error',
