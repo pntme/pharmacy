@@ -9,14 +9,6 @@ import sequelize from '../config/database';
 import logger from '../utils/logger';
 import { generateInvoiceNumber, calculateLineItemGST } from '../utils/gst';
 
-interface SaleItem {
-  product_id: number;
-  quantity: number;
-  unit_price: number;
-  discount_percentage?: number;
-  batch_number?: string;
-}
-
 export const createSale = async (req: Request, res: Response): Promise<void> => {
   const transaction = await sequelize.transaction();
 

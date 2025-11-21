@@ -8,8 +8,6 @@ import {
   CardContent,
   Fade,
   Grow,
-  TextField,
-  Button,
 } from '@mui/material';
 import {
   TrendingUp,
@@ -34,17 +32,6 @@ import {
 import { inventoryAPI, salesAPI } from '../services/api';
 
 export default function Dashboard() {
-  // Calculate default date range (last 7 days)
-  const getDefaultDateRange = () => {
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 6); // Last 7 days (including today)
-    return {
-      from: startDate.toISOString().split('T')[0],
-      to: endDate.toISOString().split('T')[0],
-    };
-  };
-
   const [stats, setStats] = useState<any>({
     todaySales: 0,
     totalOrders: 0,
@@ -54,11 +41,10 @@ export default function Dashboard() {
   const [salesTrendData, setSalesTrendData] = useState<any[]>([]);
   const [categoryData, setCategoryData] = useState<any[]>([]);
   const [topProductsData, setTopProductsData] = useState<any[]>([]);
-  const [dateRange, setDateRange] = useState(getDefaultDateRange());
 
   useEffect(() => {
     loadDashboardData();
-  }, [dateRange]);
+  }, []);
 
   const loadDashboardData = async () => {
     try {
@@ -166,10 +152,6 @@ export default function Dashboard() {
     </Grow>
   );
 
-  const handleResetDateRange = () => {
-    setDateRange(getDefaultDateRange());
-  };
-
   return (
     <Box>
       <Fade in timeout={500}>
@@ -181,45 +163,6 @@ export default function Dashboard() {
             Welcome back! Here's what's happening with your pharmacy today.
           </Typography>
         </Box>
-      </Fade>
-
-      {/* Date Range Filter */}
-      <Fade in timeout={600}>
-        <Paper sx={{ p: 2, mb: 3 }}>
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-              Date Range:
-            </Typography>
-            <TextField
-              type="date"
-              label="From"
-              size="small"
-              value={dateRange.from}
-              onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })}
-              InputLabelProps={{ shrink: true }}
-              sx={{ minWidth: 150 }}
-            />
-            <TextField
-              type="date"
-              label="To"
-              size="small"
-              value={dateRange.to}
-              onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })}
-              InputLabelProps={{ shrink: true }}
-              sx={{ minWidth: 150 }}
-            />
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={handleResetDateRange}
-            >
-              Reset (Last 7 Days)
-            </Button>
-            <Typography variant="caption" color="textSecondary" sx={{ ml: 'auto' }}>
-              Default: Last 7 days
-            </Typography>
-          </Box>
-        </Paper>
       </Fade>
 
       {/* Stats Cards */}

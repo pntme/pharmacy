@@ -165,12 +165,6 @@ Inventory.init(
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
-    quantity_available: {
-      type: DataTypes.VIRTUAL,
-      get() {
-        return this.getDataValue('quantity_on_hand') - this.getDataValue('quantity_allocated');
-      },
-    },
   },
   {
     sequelize,
