@@ -15,9 +15,12 @@ import {
   Card,
   CardContent,
   Divider,
+  TextField,
+  InputAdornment,
 } from '@mui/material';
 import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
+import { Search as SearchIcon } from '@mui/icons-material';
 import DataTable, { Column } from '../components/DataTable';
 import { salesAPI } from '../services/api';
 
@@ -40,15 +43,31 @@ interface SalesOrder {
     first_name: string;
     last_name: string;
     phone_number: string;
+    patient_code?: string;
   };
-  items?: any[];
+  SalesOrderItems?: Array<{
+    order_item_id: number;
+    product_id: number;
+    quantity: number;
+    unit_price: number;
+    total_price: number;
+    discount_amount?: number;
+    gst_amount?: number;
+    Product?: {
+      product_name: string;
+      item_code?: string;
+      generic_name?: string;
+    };
+  }>;
 }
 
 export default function Sales() {
   const [sales, setSales] = useState<SalesOrder[]>([]);
+  const [allSales, setAllSales] = useState<SalesOrder[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<SalesOrder | null>(null);
   const [viewDialog, setViewDialog] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Helper function to safely format numbers
   const formatCurrency = (value: any): string => {
@@ -60,11 +79,38 @@ export default function Sales() {
     fetchSales();
   }, []);
 
+  // Filter sales based on search query (client-side filtering)
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSales(allSales);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase();
+    const filtered = allSales.filter(sale => {
+      const orderNumber = sale.order_number?.toLowerCase() || '';
+      const patientName = sale.patient
+        ? `${sale.patient.first_name} ${sale.patient.last_name}`.toLowerCase()
+        : '';
+      const patientPhone = sale.patient?.phone_number?.toLowerCase() || '';
+      const patientCode = sale.patient?.patient_code?.toLowerCase() || '';
+
+      return orderNumber.includes(query) ||
+             patientName.includes(query) ||
+             patientPhone.includes(query) ||
+             patientCode.includes(query);
+    });
+
+    setSales(filtered);
+  }, [searchQuery, allSales]);
+
   const fetchSales = async () => {
     setLoading(true);
     try {
       const response = await salesAPI.getAll() as any;
-      setSales(response.data?.sales || []);
+      const salesData = response.data?.sales || [];
+      setAllSales(salesData);
+      setSales(salesData);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to fetch sales');
     } finally {
@@ -211,6 +257,22 @@ export default function Sales() {
         <Typography variant="h4">Sales History</Typography>
       </Box>
 
+      <Box sx={{ mb: 3 }}>
+        <TextField
+          fullWidth
+          placeholder="Search by order number, patient name, phone, or patient code..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
+
       <DataTable
         columns={columns}
         data={sales}
@@ -312,27 +374,50 @@ export default function Sales() {
                 </Grid>
 
                 {/* Items */}
-                {selectedOrder.items && selectedOrder.items.length > 0 && (
+                {selectedOrder.SalesOrderItems && selectedOrder.SalesOrderItems.length > 0 && (
                   <Grid item xs={12}>
                     <Typography variant="h6" gutterBottom>
-                      Items
+                      Items / Medicines Purchased
                     </Typography>
                     <Table size="small">
                       <TableHead>
                         <TableRow>
                           <TableCell>Product</TableCell>
+                          <TableCell>Generic Name</TableCell>
                           <TableCell align="center">Quantity</TableCell>
-                          <TableCell align="right">Price</TableCell>
+                          <TableCell align="right">Unit Price</TableCell>
                           <TableCell align="right">Total</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {Array.isArray(selectedOrder.items) && selectedOrder.items.map((item: any, index: number) => (
-                          <TableRow key={index}>
-                            <TableCell>{item.product_name || 'Product'}</TableCell>
-                            <TableCell align="center">{item.quantity}</TableCell>
-                            <TableCell align="right">₹{item.price?.toFixed(2) || '0.00'}</TableCell>
-                            <TableCell align="right">₹{item.total?.toFixed(2) || '0.00'}</TableCell>
+                        {Array.isArray(selectedOrder.SalesOrderItems) && selectedOrder.SalesOrderItems.map((item: any) => (
+                          <TableRow key={item.order_item_id}>
+                            <TableCell>
+                              <Typography variant="body2" fontWeight="medium">
+                                {item.Product?.product_name || 'Unknown Product'}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {item.Product?.item_code || ''}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="body2" color="text.secondary">
+                                {item.Product?.generic_name || '-'}
+                              </Typography>
+                            </TableCell>
+                            <TableCell align="center">
+                              <Typography variant="body2" fontWeight="medium">
+                                {item.quantity}
+                              </Typography>
+                            </TableCell>
+                            <TableCell align="right">
+                              ₹{Number(item.unit_price || 0).toFixed(2)}
+                            </TableCell>
+                            <TableCell align="right">
+                              <Typography variant="body2" fontWeight="medium">
+                                ₹{Number(item.total_price || 0).toFixed(2)}
+                              </Typography>
+                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
