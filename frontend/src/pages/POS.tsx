@@ -15,15 +15,17 @@ import {
   InputAdornment,
   CircularProgress,
 } from '@mui/material';
-import { Delete, Add, Search as SearchIcon } from '@mui/icons-material';
+import { Delete, Add, Search as SearchIcon, QrCodeScanner as ScanIcon } from '@mui/icons-material';
 import { productsAPI, salesAPI } from '../services/api';
 import toast from 'react-hot-toast';
+import BarcodeScanner from '../components/BarcodeScanner';
 
 export default function POS() {
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState<any[]>([]);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   // Auto-search as user types (debounced)
   useEffect(() => {
@@ -113,6 +115,12 @@ export default function POS() {
     }
   };
 
+  const handleBarcodeScan = (barcode: string) => {
+    // Set the search value to the scanned barcode
+    setSearch(barcode);
+    toast.success(`Barcode scanned: ${barcode}`);
+  };
+
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
@@ -131,6 +139,14 @@ export default function POS() {
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      onClick={() => setScannerOpen(true)}
+                      title="Scan Barcode"
+                      sx={{ mr: 1 }}
+                    >
+                      <ScanIcon />
+                    </IconButton>
                     {searching ? <CircularProgress size={20} /> : <SearchIcon />}
                   </InputAdornment>
                 ),
@@ -239,6 +255,14 @@ export default function POS() {
           </Paper>
         </Grid>
       </Grid>
+
+      {/* Barcode Scanner */}
+      <BarcodeScanner
+        open={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        onScan={handleBarcodeScan}
+        title="Scan Product Barcode"
+      />
     </Box>
   );
 }
