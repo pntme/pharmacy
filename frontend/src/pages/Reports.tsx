@@ -13,8 +13,6 @@ import {
   TableHead,
   TableRow,
   Paper,
-  TextField,
-  Button,
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
@@ -43,25 +41,13 @@ interface InventorySummary {
 }
 
 export default function Reports() {
-  // Calculate default date range (last 7 days)
-  const getDefaultDateRange = () => {
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 6); // Last 7 days (including today)
-    return {
-      from: startDate.toISOString().split('T')[0],
-      to: endDate.toISOString().split('T')[0],
-    };
-  };
-
   const [loading, setLoading] = useState(false);
   const [dailyReport, setDailyReport] = useState<DailyReport | null>(null);
   const [inventorySummary, setInventorySummary] = useState<InventorySummary | null>(null);
-  const [dateRange, setDateRange] = useState(getDefaultDateRange());
 
   useEffect(() => {
     fetchReports();
-  }, [dateRange]);
+  }, []);
 
   const fetchReports = async () => {
     setLoading(true);
@@ -100,10 +86,6 @@ export default function Reports() {
     </Card>
   );
 
-  const handleResetDateRange = () => {
-    setDateRange(getDefaultDateRange());
-  };
-
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
@@ -118,45 +100,8 @@ export default function Reports() {
         Reports & Analytics
       </Typography>
       <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 3 }}>
-        Report Period: {format(new Date(dateRange.from), 'MMM dd, yyyy')} - {format(new Date(dateRange.to), 'MMM dd, yyyy')}
+        Today's Report - {format(new Date(), 'MMMM dd, yyyy')}
       </Typography>
-
-      {/* Date Range Filter */}
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-            Date Range:
-          </Typography>
-          <TextField
-            type="date"
-            label="From"
-            size="small"
-            value={dateRange.from}
-            onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })}
-            InputLabelProps={{ shrink: true }}
-            sx={{ minWidth: 150 }}
-          />
-          <TextField
-            type="date"
-            label="To"
-            size="small"
-            value={dateRange.to}
-            onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })}
-            InputLabelProps={{ shrink: true }}
-            sx={{ minWidth: 150 }}
-          />
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={handleResetDateRange}
-          >
-            Reset (Last 7 Days)
-          </Button>
-          <Typography variant="caption" color="textSecondary" sx={{ ml: 'auto' }}>
-            Default: Last 7 days
-          </Typography>
-        </Box>
-      </Paper>
 
       {/* Summary Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
