@@ -353,7 +353,7 @@ export const getStockSummary = async (req: Request, res: Response): Promise<void
   }
 };
 
-export const uploadInvoice = async (req: Request, res: Response): Promise<void> => {
+export const uploadInvoice = async (req: Request & { file?: Express.Multer.File }, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
@@ -440,7 +440,7 @@ export const deleteInvoice = async (req: Request, res: Response): Promise<void> 
     deleteFile(filePath);
 
     // Update inventory to remove invoice URL
-    await inventory.update({ invoice_url: null });
+    await inventory.update({ invoice_url: undefined });
 
     logger.info(`Invoice deleted for inventory ID ${id}`);
 
