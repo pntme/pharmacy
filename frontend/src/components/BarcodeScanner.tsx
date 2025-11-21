@@ -70,7 +70,7 @@ export default function BarcodeScanner({ open, onClose, onScan, title = 'Scan Ba
           onScan(decodedText);
           handleClose();
         },
-        (errorMessage) => {
+        () => {
           // Scanning error (usually just "no barcode found")
           // Ignore these errors to avoid console spam
         }
