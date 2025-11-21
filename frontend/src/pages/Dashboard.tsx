@@ -166,10 +166,6 @@ export default function Dashboard() {
     </Grow>
   );
 
-  const handleDateRangeChange = () => {
-    // Trigger data reload via useEffect dependency
-  };
-
   const handleResetDateRange = () => {
     setDateRange(getDefaultDateRange());
   };
