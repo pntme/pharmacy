@@ -338,7 +338,7 @@ export default function Inventory() {
         </Button>
       </Box>
 
-      {expiringItems.length > 0 && (
+      {expiringItems && expiringItems.length > 0 && (
         <Alert severity="warning" sx={{ mb: 3 }} icon={<WarningIcon />}>
           <strong>{expiringItems.length} items</strong> are expiring soon or have expired. Check the "Expiring Items" tab.
         </Alert>
@@ -346,7 +346,7 @@ export default function Inventory() {
 
       <Tabs value={currentTab} onChange={(_e, newValue) => setCurrentTab(newValue)} sx={{ mb: 2 }}>
         <Tab label="All Inventory" />
-        <Tab label={`Expiring Items (${expiringItems.length})`} />
+        <Tab label={`Expiring Items (${expiringItems?.length || 0})`} />
       </Tabs>
 
       {currentTab === 0 && (

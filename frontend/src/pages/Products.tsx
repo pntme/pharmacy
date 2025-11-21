@@ -63,6 +63,19 @@ export default function Products() {
     fetchProducts();
   }, []);
 
+  // Auto-search as user types (debounced)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery.trim()) {
+        handleSearch();
+      } else {
+        fetchProducts();
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const fetchProducts = async () => {
     setLoading(true);
     try {
